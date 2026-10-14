@@ -193,17 +193,12 @@ class AlarmAndCalendarService(private val context: Context) {
       }
       cal.set(Calendar.MILLISECOND, 0)
 
+      // Ring exactly when event is starting (exactStartMs) - no early reminders and not when ending
       val exactStartMs = cal.timeInMillis
-      val reminderOffsetMs = session.reminderMinutes * 60 * 1000L
-      var triggerTime = exactStartMs - reminderOffsetMs
+      var triggerTime = exactStartMs
 
       val now = System.currentTimeMillis()
-      // If subtracting reminderMinutes puts triggerTime in the past, BUT exactStartMs is in the future or current window, fall back to exactStartMs!
-      if (triggerTime <= now && exactStartMs > now - 300_000L) {
-        triggerTime = exactStartMs
-      }
-
-      // Only if date was blank (undated) and exactStartMs has already passed for today, roll forward to tomorrow's instance
+      // Only if date was blank (undated recurring) and exactStartMs has already passed for today, roll forward to tomorrow's instance
       if (triggerTime <= now && session.date.trim().isEmpty()) {
         cal.add(Calendar.DAY_OF_YEAR, 1)
         triggerTime = cal.timeInMillis
@@ -403,10 +398,10 @@ class AlarmAndCalendarService(private val context: Context) {
 
       val notification = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-        .setContentTitle("⏰ Alarm: ${session.subjectName}")
-        .setContentText("${session.topic} (${session.startTime} - ${session.endTime})")
+        .setContentTitle("⏰ Event Starting Now: ${session.subjectName}")
+        .setContentText("${session.topic} (Started at ${session.startTime})")
         .setStyle(NotificationCompat.BigTextStyle().bigText(
-          "Scheduled now: ${session.topic}\nTime: ${session.startTime} - ${session.endTime}\nLocation: ${session.location.ifBlank { "Campus" }}\n${session.notes}"
+          "Event Starting Now: ${session.topic}\nScheduled: ${session.startTime} - ${session.endTime}\nLocation: ${session.location.ifBlank { "Campus" }}\n${session.notes}"
         ))
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -454,7 +449,7 @@ class AlarmAndCalendarService(private val context: Context) {
       putExtra(CalendarContract.Events.DESCRIPTION, "StudyPilot Session\nNotes: ${session.notes}")
       putExtra(CalendarContract.Events.EVENT_LOCATION, session.location)
       putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
-      putExtra(CalendarContract.Reminders.MINUTES, session.reminderMinutes)
+      putExtra(CalendarContract.Reminders.MINUTES, 0)
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
   }

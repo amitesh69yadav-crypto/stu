@@ -535,12 +535,12 @@ fun ActiveAlarmAlertDialog(
         Spacer(modifier = Modifier.width(12.dp))
         Column {
           Text(
-            text = "ALARM RINGING!",
+            text = "EVENT STARTING NOW!",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
             color = PaletteDarkText
           )
           Text(
-            text = "Time to study",
+            text = "Scheduled start time reached (${session.startTime})",
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
             color = PaletteDarkText
           )

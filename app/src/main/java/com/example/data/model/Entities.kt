@@ -26,7 +26,7 @@ data class TimetableSession(
   val location: String = "Campus Lecture Hall",
   val notes: String = "",
   val recurringDays: String = "", // e.g., "Mon,Wed,Fri" or empty
-  val reminderMinutes: Int = 15,
+  val reminderMinutes: Int = 0,
   val status: String = "SCHEDULED", // SCHEDULED, COMPLETED, MISSED, RESCHEDULED
   val isAlarmEnabled: Boolean = true,
   val googleCalendarEventId: String? = null,

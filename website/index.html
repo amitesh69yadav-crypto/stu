@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyPilot AI — Intelligent Study Companion & Schedule Planner</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Marked Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              sage: '#2D4B3E',
+              darkSage: '#1E342B',
+              celadon: '#DDE7DF',
+              cream: '#F9F8F3',
+              dark: '#1C2B24',
+              accent: '#00B4D8',
+              success: '#10B981',
+              warning: '#F59E0B',
+              rose: '#F43F5E'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F9F8F3;
+      color: #1C2B24;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.04);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2D4B3E40;
+      border-radius: 9999px;
+    }
+    /* Structured Table Card Formatting */
+    .markdown-content table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 12px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #DDE7DF;
+    }
+    .markdown-content th {
+      background-color: #2D4B3E15;
+      color: #1E342B;
+      font-weight: 700;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #DDE7DF;
+    }
+    .markdown-content td {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #E2E8F0;
+      background: white;
+    }
+    .markdown-content tr:last-child td {
+      border-bottom: none;
+    }
+    .markdown-content pre {
+      background: #1E293B;
+      color: #F8FAFC;
+      padding: 14px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      margin: 10px 0;
+    }
+    .markdown-content code:not(pre code) {
+      background: #E2E8F0;
+      color: #0F172A;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row bg-[#F9F8F3]">
+
+  <!-- Mobile Top Bar -->
+  <header class="md:hidden flex items-center justify-between px-5 py-3.5 bg-[#2D4B3E] text-white sticky top-0 z-40 shadow-md">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+        <i data-lucide="graduation-cap" class="w-5 h-5 text-[#F9F8F3]"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold tracking-tight">StudyPilot AI</h1>
+        <p class="text-[10px] text-white/70">Exact-Start Alarms & AI Tutor</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="mobileClockBadge" class="text-xs font-mono font-bold bg-white/15 px-2.5 py-1 rounded-full text-white">00:00:00</span>
+    </div>
+  </header>
+
+  <!-- Sidebar Navigation (Desktop) -->
+  <aside class="hidden md:flex flex-col w-64 bg-[#2D4B3E] text-white p-5 justify-between shrink-0 shadow-xl">
+    <div>
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 pb-6 border-b border-white/15 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shadow-inner">
+          <i data-lucide="graduation-cap" class="w-6 h-6 text-[#F9F8F3]"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight">StudyPilot AI</h1>
+          <p class="text-xs text-white/70">Companion & Timetable</p>
+        </div>
+      </div>
+
+      <!-- Real-time Clock Widget -->
+      <div class="bg-black/20 rounded-xl p-3.5 mb-6 border border-white/10">
+        <div class="flex items-center justify-between text-xs text-white/70 mb-1">
+          <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Local Time</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        </div>
+        <div id="sidebarClock" class="text-xl font-bold font-mono text-white tracking-wider">--:--:--</div>
+        <div id="sidebarDate" class="text-[11px] text-white/60 mt-0.5">Today</div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="space-y-1.5">
+        <button onclick="switchTab('timetable')" id="nav-timetable" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-white/15 text-white">
+          <i data-lucide="calendar" class="w-4 h-4"></i> Timetable & Alarms
+        </button>
+        <button onclick="switchTab('tutor')" id="nav-tutor" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all text-white/70 hover:bg-white/10 hover:text-white">
+          <i data-lucide="bot" class="w-4 h-4"></i> AI Study Tutor
+        </button>
+        <button onclick="switchTab('topics')" id="nav-topics" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all text-white/70 hover:bg-white/10 hover:text-white">
+          <i data-lucide="book-open" class="w-4 h-4"></i> Topics & Subjects
+        </button>
+        <button onclick="switchTab('quiz')" id="nav-quiz" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all text-white/70 hover:bg-white/10 hover:text-white">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> Revision Quizzes
+        </button>
+      </nav>
+    </div>
+
+    <!-- Alarm Status Widget -->
+    <div class="bg-white/10 rounded-xl p-3.5 border border-white/10 text-xs">
+      <div class="flex items-center gap-2 font-bold mb-1">
+        <i data-lucide="bell" class="w-4 h-4 text-emerald-400"></i>
+        <span>Exact-Start Alarm</span>
+      </div>
+      <p class="text-white/70 text-[11px]">Rings exactly at event start. Zero early offsets.</p>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 flex flex-col min-w-0 h-[calc(100vh-60px)] md:h-screen overflow-y-auto custom-scrollbar">
+
+    <!-- 1. TIMETABLE TAB -->
+    <section id="tab-timetable" class="tab-page p-4 md:p-8 space-y-6">
+      <!-- Header Banner -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#DDE7DF] shadow-sm">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#2D4B3E]/10 text-[#2D4B3E] mb-2">
+            <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i> Exact-Start Alarm Engine Active
+          </span>
+          <h2 class="text-2xl font-black text-[#1C2B24]">Timetable & Schedule</h2>
+          <p class="text-xs md:text-sm text-gray-600 mt-1">Alarms ring exactly when scheduled events begin. No early reminders or end triggers.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openAddSessionModal()" class="flex items-center gap-2 px-4 py-2.5 bg-[#2D4B3E] text-white rounded-xl text-sm font-bold shadow hover:bg-[#1E342B] transition-all">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Session
+          </button>
+          <button onclick="testAlarmNow()" class="flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow" title="Test Alarm Tone">
+            <i data-lucide="volume-2" class="w-4 h-4"></i> Test Tone
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Category Chips -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+        <button onclick="filterCategory('ALL')" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#2D4B3E] text-white transition-all">All Events</button>
+        <button onclick="filterCategory('ACADEMIC')" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-[#DDE7DF] hover:bg-gray-50 transition-all">Academic</button>
+        <button onclick="filterCategory('FOOD')" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-[#DDE7DF] hover:bg-gray-50 transition-all">Meals</button>
+        <button onclick="filterCategory('SLEEP')" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-[#DDE7DF] hover:bg-gray-50 transition-all">Rest</button>
+        <button onclick="filterCategory('EXERCISE')" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-[#DDE7DF] hover:bg-gray-50 transition-all">Fitness</button>
+      </div>
+
+      <!-- Sessions List Grid -->
+      <div id="sessionsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 2. AI TUTOR TAB -->
+    <section id="tab-tutor" class="tab-page hidden p-4 md:p-8 flex-1 flex flex-col h-full max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-[#DDE7DF] shadow-sm mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#2D4B3E] text-white flex items-center justify-center">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-[#1C2B24]">StudyPilot AI Tutor</h2>
+            <p class="text-xs text-gray-500">Ask questions, request summaries, or compare computer science concepts</p>
+          </div>
+        </div>
+        <button onclick="clearChatHistory()" class="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1 font-medium">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear Chat
+        </button>
+      </div>
+
+      <!-- Quick Study Prompts -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-3 custom-scrollbar">
+        <button onclick="sendQuickPrompt('Explain Abstract Classes vs Interfaces with a detailed table and examples')" class="px-3 py-1.5 bg-white border border-[#DDE7DF] text-xs font-semibold rounded-full hover:bg-emerald-50 hover:border-emerald-300 transition-all text-[#1C2B24] shrink-0">
+          💡 Abstract Classes vs Interfaces
+        </button>
+        <button onclick="sendQuickPrompt('Explain AVL Tree rotations with pseudocode')" class="px-3 py-1.5 bg-white border border-[#DDE7DF] text-xs font-semibold rounded-full hover:bg-emerald-50 hover:border-emerald-300 transition-all text-[#1C2B24] shrink-0">
+          🔍 AVL Tree Rotations
+        </button>
+        <button onclick="sendQuickPrompt('Give me a 5-minute revision summary of Matrix Diagonalization')" class="px-3 py-1.5 bg-white border border-[#DDE7DF] text-xs font-semibold rounded-full hover:bg-emerald-50 hover:border-emerald-300 transition-all text-[#1C2B24] shrink-0">
+          ⚡ Matrix Diagonalization Summary
+        </button>
+      </div>
+
+      <!-- Chat Messages Container -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto space-y-4 pr-1 mb-4 custom-scrollbar">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="bg-white p-3 rounded-2xl border border-[#DDE7DF] shadow-md flex items-center gap-2">
+        <input id="chatInput" type="text" placeholder="Ask your study tutor anything..." class="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none text-[#1C2B24]" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+        <button onclick="sendChatMessage()" class="p-2.5 bg-[#2D4B3E] text-white rounded-xl hover:bg-[#1E342B] transition-all">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. TOPICS TAB -->
+    <section id="tab-topics" class="tab-page hidden p-4 md:p-8 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#DDE7DF] shadow-sm">
+        <div>
+          <h2 class="text-2xl font-black text-[#1C2B24]">Subjects & Topic Tracker</h2>
+          <p class="text-xs md:text-sm text-gray-600 mt-1">Track daily study mastery and mark topics complete.</p>
+        </div>
+        <button onclick="openAddTopicModal()" class="flex items-center gap-2 px-4 py-2 bg-[#2D4B3E] text-white rounded-xl text-sm font-bold shadow hover:bg-[#1E342B]">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Topic
+        </button>
+      </div>
+      <div id="topicsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 4. QUIZ TAB -->
+    <section id="tab-quiz" class="tab-page hidden p-4 md:p-8 space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-[#DDE7DF] shadow-sm">
+        <h2 class="text-2xl font-black text-[#1C2B24]">Weekend Revision Quizzes</h2>
+        <p class="text-xs md:text-sm text-gray-600 mt-1">Test your mastery with instant AI-generated revision questions.</p>
+      </div>
+      <div id="quizContainer" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="md:hidden flex items-center justify-around bg-white border-t border-[#DDE7DF] py-2 px-3 sticky bottom-0 z-40">
+    <button onclick="switchTab('timetable')" class="mobile-nav flex flex-col items-center gap-1 text-xs font-bold text-[#2D4B3E]">
+      <i data-lucide="calendar" class="w-4 h-4"></i>
+      <span>Schedule</span>
+    </button>
+    <button onclick="switchTab('tutor')" class="mobile-nav flex flex-col items-center gap-1 text-xs font-medium text-gray-500">
+      <i data-lucide="bot" class="w-4 h-4"></i>
+      <span>AI Tutor</span>
+    </button>
+    <button onclick="switchTab('topics')" class="mobile-nav flex flex-col items-center gap-1 text-xs font-medium text-gray-500">
+      <i data-lucide="book-open" class="w-4 h-4"></i>
+      <span>Topics</span>
+    </button>
+    <button onclick="switchTab('quiz')" class="mobile-nav flex flex-col items-center gap-1 text-xs font-medium text-gray-500">
+      <i data-lucide="sparkles" class="w-4 h-4"></i>
+      <span>Quiz</span>
+    </button>
+  </nav>
+
+  <!-- ACTIVE ALARM MODAL (Triggered when event starts exactly) -->
+  <div id="alarmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-[#2D4B3E] animate-bounce-once text-center">
+      <div class="w-16 h-16 rounded-2xl bg-[#2D4B3E] text-white flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg">
+        <i data-lucide="bell-ring" class="w-8 h-8"></i>
+      </div>
+      <span class="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-extrabold rounded-full mb-2 uppercase tracking-wide">
+        Alarm Ringing
+      </span>
+      <h3 class="text-2xl font-black text-[#1C2B24] mb-1">EVENT STARTING NOW!</h3>
+      <p id="alarmEventTitle" class="text-lg font-bold text-[#2D4B3E] mb-1">Advanced Algorithms</p>
+      <p id="alarmEventDetails" class="text-sm text-gray-600 mb-6 font-medium">Scheduled start time reached (10:00 AM)</p>
+      
+      <div class="flex flex-col gap-2.5">
+        <button onclick="dismissAlarm()" class="w-full py-3.5 bg-[#2D4B3E] text-white font-extrabold rounded-xl shadow-lg hover:bg-[#1E342B] transition-all text-sm">
+          Dismiss Alarm
+        </button>
+        <button onclick="snoozeAlarm()" class="w-full py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-xs">
+          Snooze 5 Minutes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD SESSION MODAL -->
+  <div id="addSessionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+        <h3 class="text-lg font-bold text-[#1C2B24]">Schedule Session or Routine</h3>
+        <button onclick="closeAddSessionModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="addSessionForm" onsubmit="saveSession(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Subject / Category</label>
+          <input type="text" id="sessionSubject" required placeholder="e.g., Computer Science, Mathematics, Breakfast" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none focus:border-[#2D4B3E]">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Topic / Event Name</label>
+          <input type="text" id="sessionTopic" required placeholder="e.g., AVL Tree Analysis, Morning Run" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none focus:border-[#2D4B3E]">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Start Time (Exact Alarm)</label>
+            <input type="time" id="sessionStartTime" required class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none focus:border-[#2D4B3E]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">End Time</label>
+            <input type="time" id="sessionEndTime" required class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none focus:border-[#2D4B3E]">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Location</label>
+          <input type="text" id="sessionLocation" placeholder="e.g., Hall 4B, Room 102" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none focus:border-[#2D4B3E]">
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+          <span>Alarm rings <strong>exactly at the Start Time</strong>. No early reminder is triggered.</span>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAddSessionModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-sm font-bold hover:bg-[#1E342B]">Save Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- Data Management & LocalStorage ---
+    const STORAGE_KEY_SESSIONS = 'studypilot_sessions_v1';
+    const STORAGE_KEY_TOPICS = 'studypilot_topics_v1';
+    const STORAGE_KEY_CHAT = 'studypilot_chat_v1';
+
+    let sessions = JSON.parse(localStorage.getItem(STORAGE_KEY_SESSIONS)) || [
+      {
+        id: 1,
+        subject: "Computer Science",
+        topic: "AVL Trees & Balanced Search Trees",
+        startTime: "09:00",
+        endTime: "10:30",
+        location: "Hall C, Turing Building",
+        category: "ACADEMIC",
+        alarmEnabled: true
+      },
+      {
+        id: 2,
+        subject: "Mathematics",
+        topic: "Matrix Diagonalization & Eigenvalues",
+        startTime: "11:00",
+        endTime: "12:30",
+        location: "Lecture Theatre 2",
+        category: "ACADEMIC",
+        alarmEnabled: true
+      },
+      {
+        id: 3,
+        subject: "Food & Meals",
+        topic: "Nutritious Lunch & Relaxation",
+        startTime: "13:00",
+        endTime: "14:00",
+        location: "Student Commons",
+        category: "FOOD",
+        alarmEnabled: true
+      },
+      {
+        id: 4,
+        subject: "Physics",
+        topic: "Wave-Particle Duality & Schrödinger Eq",
+        startTime: "14:30",
+        endTime: "16:00",
+        location: "Physics Lab 1",
+        category: "ACADEMIC",
+        alarmEnabled: true
+      }
+    ];
+
+    let topics = JSON.parse(localStorage.getItem(STORAGE_KEY_TOPICS)) || [
+      { id: 1, subject: "Computer Science", name: "Abstract Classes vs Interfaces", status: "COMPLETED", progress: 100 },
+      { id: 2, subject: "Computer Science", name: "B-Trees & Disk Storage", status: "IN_PROGRESS", progress: 65 },
+      { id: 3, subject: "Mathematics", name: "Gram-Schmidt Orthogonalization", status: "NOT_STARTED", progress: 0 },
+      { id: 4, subject: "Physics", name: "Heisenberg Uncertainty Principle", status: "IN_PROGRESS", progress: 40 }
+    ];
+
+    let chatMessages = JSON.parse(localStorage.getItem(STORAGE_KEY_CHAT)) || [
+      {
+        role: "assistant",
+        text: "👋 Hello! I am your **StudyPilot AI Tutor**. Ask me any question, request a concept comparison table, or ask for quiz revision questions!"
+      }
+    ];
+
+    let currentCategoryFilter = 'ALL';
+    let audioCtx = null;
+    let alarmIntervalId = null;
+    let ringingSession = null;
+    let triggeredSessionsToday = new Set();
+
+    // --- Web Audio Synthesizer Alarm Sound ---
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playAlarmTone() {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(880, now); // A5
+      osc.frequency.setValueAtTime(1174.66, now + 0.15); // D6
+      osc.frequency.setValueAtTime(880, now + 0.3);
+
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+
+    function testAlarmNow() {
+      playAlarmTone();
+      alert("🔊 Sound checked! Alarm rings with an audible chime when an event starts.");
+    }
+
+    // --- Clock & Exact Alarm Checker ---
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const currentTimeStr = `${hours}:${minutes}`;
+      const fullTimeStr = `${currentTimeStr}:${seconds}`;
+
+      const sidebarClock = document.getElementById('sidebarClock');
+      const mobileClock = document.getElementById('mobileClockBadge');
+      if (sidebarClock) sidebarClock.textContent = fullTimeStr;
+      if (mobileClock) mobileClock.textContent = fullTimeStr;
+
+      const dateStr = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      const sidebarDate = document.getElementById('sidebarDate');
+      if (sidebarDate) sidebarDate.textContent = dateStr;
+
+      // Exact-time alarm check (Rings ONLY when event starts, no early reminder)
+      sessions.forEach(session => {
+        if (!session.alarmEnabled) return;
+        if (session.startTime === currentTimeStr && !triggeredSessionsToday.has(session.id)) {
+          triggeredSessionsToday.add(session.id);
+          triggerAlarm(session);
+        }
+      });
+    }
+
+    function triggerAlarm(session) {
+      ringingSession = session;
+      const modal = document.getElementById('alarmModal');
+      document.getElementById('alarmEventTitle').textContent = `${session.subject} — ${session.topic}`;
+      document.getElementById('alarmEventDetails').textContent = `Scheduled start time reached (${session.startTime})`;
+      modal.classList.remove('hidden');
+
+      // Play looping tone every 1.5s
+      playAlarmTone();
+      if (alarmIntervalId) clearInterval(alarmIntervalId);
+      alarmIntervalId = setInterval(playAlarmTone, 1500);
+    }
+
+    function dismissAlarm() {
+      const modal = document.getElementById('alarmModal');
+      modal.classList.add('hidden');
+      if (alarmIntervalId) {
+        clearInterval(alarmIntervalId);
+        alarmIntervalId = null;
+      }
+      ringingSession = null;
+    }
+
+    function snoozeAlarm() {
+      dismissAlarm();
+      setTimeout(() => {
+        if (ringingSession) {
+          triggerAlarm(ringingSession);
+        }
+      }, 5 * 60 * 1000);
+    }
+
+    // --- Tab Switching ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
+      const activePage = document.getElementById(`tab-${tabId}`);
+      if (activePage) activePage.classList.remove('hidden');
+
+      // Desktop nav styles
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('bg-white/15', 'text-white');
+        item.classList.add('text-white/70');
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.add('bg-white/15', 'text-white');
+        activeNav.classList.remove('text-white/70');
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- Render Timetable ---
+    function renderSessions() {
+      const container = document.getElementById('sessionsContainer');
+      const filtered = currentCategoryFilter === 'ALL' 
+        ? sessions 
+        : sessions.filter(s => s.category === currentCategoryFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-gray-500 bg-white rounded-2xl border border-[#DDE7DF]">
+            <i data-lucide="calendar-x" class="w-8 h-8 mx-auto mb-2 text-gray-400"></i>
+            <p class="font-medium text-sm">No scheduled events found for this filter.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filtered.map(session => `
+        <div class="bg-white rounded-2xl p-5 border border-[#DDE7DF] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-bold ${
+                session.category === 'ACADEMIC' ? 'bg-emerald-100 text-emerald-800' :
+                session.category === 'FOOD' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+              }">${session.subject}</span>
+              <button onclick="toggleSessionAlarm(${session.id})" class="p-1.5 rounded-lg ${session.alarmEnabled ? 'text-[#2D4B3E] bg-[#2D4B3E]/10' : 'text-gray-400 bg-gray-100'}">
+                <i data-lucide="${session.alarmEnabled ? 'bell' : 'bell-off'}" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <h4 class="font-bold text-base text-[#1C2B24] mb-1">${session.topic}</h4>
+            <div class="flex items-center gap-2 text-xs text-gray-600 mb-2">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-[#2D4B3E]"></i>
+              <span class="font-mono font-semibold">${session.startTime} - ${session.endTime}</span>
+            </div>
+            ${session.location ? `
+              <div class="flex items-center gap-1.5 text-xs text-gray-500">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                <span>${session.location}</span>
+              </div>
+            ` : ''}
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+            <span class="text-emerald-700 font-semibold flex items-center gap-1">
+              <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i> Rings at ${session.startTime}
+            </span>
+            <button onclick="deleteSession(${session.id})" class="text-gray-400 hover:text-red-500">
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function toggleSessionAlarm(id) {
+      sessions = sessions.map(s => s.id === id ? { ...s, alarmEnabled: !s.alarmEnabled } : s);
+      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+      renderSessions();
+    }
+
+    function deleteSession(id) {
+      sessions = sessions.filter(s => s.id !== id);
+      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+      renderSessions();
+    }
+
+    function filterCategory(cat) {
+      currentCategoryFilter = cat;
+      document.querySelectorAll('.category-chip').forEach(btn => {
+        btn.classList.remove('bg-[#2D4B3E]', 'text-white');
+        btn.classList.add('bg-white', 'text-gray-700');
+      });
+      event.target.classList.add('bg-[#2D4B3E]', 'text-white');
+      event.target.classList.remove('bg-white', 'text-gray-700');
+      renderSessions();
+    }
+
+    // --- Add Session Modal Handlers ---
+    function openAddSessionModal() {
+      document.getElementById('addSessionModal').classList.remove('hidden');
+    }
+    function closeAddSessionModal() {
+      document.getElementById('addSessionModal').classList.add('hidden');
+    }
+
+    function saveSession(e) {
+      e.preventDefault();
+      const subject = document.getElementById('sessionSubject').value;
+      const topic = document.getElementById('sessionTopic').value;
+      const startTime = document.getElementById('sessionStartTime').value;
+      const endTime = document.getElementById('sessionEndTime').value;
+      const location = document.getElementById('sessionLocation').value;
+
+      const newSession = {
+        id: Date.now(),
+        subject,
+        topic,
+        startTime,
+        endTime,
+        location,
+        category: 'ACADEMIC',
+        alarmEnabled: true
+      };
+
+      sessions.push(newSession);
+      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+      closeAddSessionModal();
+      document.getElementById('addSessionForm').reset();
+      renderSessions();
+    }
+
+    // --- AI Tutor Chat Handlers ---
+    function renderChat() {
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = chatMessages.map(msg => `
+        <div class="flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}">
+          ${msg.role !== 'user' ? `
+            <div class="w-8 h-8 rounded-full bg-[#2D4B3E] text-white flex items-center justify-center shrink-0 mt-1">
+              <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+          ` : ''}
+          <div class="max-w-[85%] md:max-w-[75%] rounded-2xl p-4 ${
+            msg.role === 'user' 
+              ? 'bg-[#2D4B3E] text-white rounded-br-sm' 
+              : 'bg-white text-[#1C2B24] border border-[#DDE7DF] shadow-sm rounded-bl-sm markdown-content'
+          }">
+            ${msg.role === 'user' ? `<p class="text-sm font-medium">${msg.text}</p>` : marked.parse(msg.text)}
+          </div>
+        </div>
+      `).join('');
+
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const query = input.value.trim();
+      if (!query) return;
+
+      chatMessages.push({ role: 'user', text: query });
+      input.value = '';
+      renderChat();
+
+      // Simulated Tutor response with rich formatted comparison table if requested
+      setTimeout(() => {
+        let reply = "";
+        const lower = query.toLowerCase();
+
+        if (lower.includes("abstract") && lower.includes("interface")) {
+          reply = `### Abstract Classes vs. Interfaces in Java & Kotlin
+
+Here is the comparison formatted cleanly:
+
+| Feature | Abstract Class | Interface |
+| :--- | :--- | :--- |
+| **Instantiation** | Cannot be instantiated directly | Cannot be instantiated directly |
+| **State & Variables** | Can contain state fields (private, protected, public) | Cannot hold instance state (constants only in Java) |
+| **Inheritance** | Single inheritance only (\`extends\`) | Multiple inheritance supported (\`implements\`) |
+| **Constructors** | Can have constructors | No constructors allowed |
+| **Default Methods** | Supports concrete methods with implementation | Supports default methods (since Java 8) |
+
+\`\`\`kotlin
+abstract class Vehicle(val speed: Int) {
+    abstract fun drive()
+}
+
+interface Flyable {
+    fun fly() = println("Flying high!")
+}
+\`\`\`
+
+**Key takeaway**: Use an **Abstract Class** for strong *is-a* relationships sharing state, and an **Interface** for *can-do* behaviors.`;
+        } else if (lower.includes("avl") || lower.includes("tree")) {
+          reply = `### AVL Tree Self-Balancing Rotations
+
+An **AVL Tree** enforces a balance factor of $\\in \\{-1, 0, 1\\}$ for each node.
+
+| Violation Type | Case | Fix Rotation |
+| :--- | :--- | :--- |
+| **Left-Left (LL)** | Insertion into left subtree of left child | Single Right Rotation |
+| **Right-Right (RR)** | Insertion into right subtree of right child | Single Left Rotation |
+| **Left-Right (LR)** | Insertion into right subtree of left child | Left rotate child, then Right rotate parent |
+| **Right-Left (RL)** | Insertion into left subtree of right child | Right rotate child, then Left rotate parent |
+
+All rotations execute in **$O(1)$** time, preserving the overall **$O(\\log n)$** lookup efficiency.`;
+        } else {
+          reply = `That is an excellent study topic! When preparing this concept for your exams:
+1. **Focus on core definitions and invariables**.
+2. **Review edge cases and counter-examples**.
+3. **Practice writing concise explanations without looking at notes**.
+
+Let me know if you would like a comparison table or a quick 3-question quiz on this topic!`;
+        }
+
+        chatMessages.push({ role: 'assistant', text: reply });
+        localStorage.setItem(STORAGE_KEY_CHAT, JSON.stringify(chatMessages));
+        renderChat();
+      }, 600);
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('chatInput').value = promptText;
+      sendChatMessage();
+    }
+
+    function clearChatHistory() {
+      if (confirm("Are you sure you want to clear your chat history?")) {
+        chatMessages = [{
+          role: "assistant",
+          text: "👋 Chat reset! How can I help you study today?"
+        }];
+        localStorage.setItem(STORAGE_KEY_CHAT, JSON.stringify(chatMessages));
+        renderChat();
+      }
+    }
+
+    // --- Topics Handlers ---
+    function renderTopics() {
+      const container = document.getElementById('topicsContainer');
+      container.innerHTML = topics.map(topic => `
+        <div class="bg-white rounded-2xl p-5 border border-[#DDE7DF] shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">${topic.subject}</span>
+              <span class="text-xs font-extrabold ${topic.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'}">${topic.status.replace('_', ' ')}</span>
+            </div>
+            <h4 class="font-bold text-base text-[#1C2B24] mb-3">${topic.name}</h4>
+            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-2">
+              <div class="bg-[#2D4B3E] h-full rounded-full transition-all duration-500" style="width: ${topic.progress}%"></div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-3 border-t border-gray-100 text-xs">
+            <span class="font-semibold text-gray-500">${topic.progress}% Mastered</span>
+            <button onclick="toggleTopicStatus(${topic.id})" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg hover:bg-emerald-100 transition-all">
+              ${topic.status === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Completed'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function toggleTopicStatus(id) {
+      topics = topics.map(t => {
+        if (t.id === id) {
+          const next = t.status === 'COMPLETED' ? 'IN_PROGRESS' : 'COMPLETED';
+          return { ...t, status: next, progress: next === 'COMPLETED' ? 100 : 50 };
+        }
+        return t;
+      });
+      localStorage.setItem(STORAGE_KEY_TOPICS, JSON.stringify(topics));
+      renderTopics();
+    }
+
+    // --- Quiz Handlers ---
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl p-6 border border-[#DDE7DF] shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Question 1 of 2</span>
+            <span class="text-xs font-semibold text-gray-400">Computer Science</span>
+          </div>
+          <h3 class="text-base font-bold text-[#1C2B24]">Which of the following rotations is required when a node is inserted into the left subtree of a right child in an AVL tree?</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            <button onclick="answerQuiz(this, false)" class="quiz-opt text-left p-3.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all">A) Single Left Rotation (LL)</button>
+            <button onclick="answerQuiz(this, true)" class="quiz-opt text-left p-3.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all">B) Right-Left Double Rotation (RL)</button>
+            <button onclick="answerQuiz(this, false)" class="quiz-opt text-left p-3.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all">C) Single Right Rotation (RR)</button>
+            <button onclick="answerQuiz(this, false)" class="quiz-opt text-left p-3.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all">D) No rotation needed</button>
+          </div>
+          <div id="quizFeedback" class="hidden p-3 rounded-xl text-xs font-semibold mt-3"></div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function answerQuiz(btn, isCorrect) {
+      document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+      const fb = document.getElementById('quizFeedback');
+      fb.classList.remove('hidden');
+
+      if (isCorrect) {
+        btn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+        fb.className = 'p-3 rounded-xl text-xs font-semibold mt-3 bg-emerald-100 text-emerald-800';
+        fb.innerHTML = '🎉 <strong>Correct!</strong> A Right-Left (RL) rotation first rotates the right child to the right, then rotates the unbalanced node to the left.';
+      } else {
+        btn.classList.add('bg-red-100', 'border-red-500', 'text-red-900');
+        fb.className = 'p-3 rounded-xl text-xs font-semibold mt-3 bg-red-100 text-red-800';
+        fb.innerHTML = '❌ <strong>Incorrect.</strong> The correct answer is <strong>B) Right-Left Double Rotation (RL)</strong>.';
+      }
+    }
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderSessions();
+      renderChat();
+      renderTopics();
+      renderQuiz();
+
+      // Start Clock & exact-start alarm check
+      updateClock();
+      setInterval(updateClock, 1000);
+    });
+  </script>
+</body>
+</html>

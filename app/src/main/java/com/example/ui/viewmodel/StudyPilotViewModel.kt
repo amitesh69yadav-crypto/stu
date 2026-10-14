@@ -389,7 +389,6 @@ class StudyPilotViewModel(application: Application) : AndroidViewModel(applicati
             if (!isForToday) continue
             if (triggeredSessionIdsToday.contains(session.id) || dismissedSessionIdsToday.contains(session.id)) continue
 
-            val triggerTime = alarmAndCalendarService.computeSessionTriggerTimeMillis(session)
             val (startH, startM) = parseQuickTime(session.startTime)
             val cal = java.util.Calendar.getInstance().apply {
               set(java.util.Calendar.HOUR_OF_DAY, startH)
@@ -399,8 +398,9 @@ class StudyPilotViewModel(application: Application) : AndroidViewModel(applicati
             }
             val exactStartMs = cal.timeInMillis
 
-            // Trigger if current mobile time has reached triggerTime OR exactStartMs (within 5-minute window)
-            if ((now >= triggerTime && now <= triggerTime + 300_000) || (now >= exactStartMs && now <= exactStartMs + 300_000)) {
+            // Trigger ONLY when the event is starting exactly (at exactStartMs, within 5-minute window)
+            // No early reminder and not when ending
+            if (now >= exactStartMs && now <= exactStartMs + 300_000) {
               triggeredSessionIdsToday.add(session.id)
               triggerTestAlarm(session)
               break

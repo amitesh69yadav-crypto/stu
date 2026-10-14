@@ -598,7 +598,7 @@ class StudyPilotRepository(
         location = if (isMed) "Medical School Lecture Hall A" else if (isEng) "Engineering Lab 3" else "Hall C, Turing Building",
         notes = "Bring lecture notes and review slides.",
         recurringDays = "Mon,Wed,Fri",
-        reminderMinutes = 15,
+        reminderMinutes = 0,
         status = "SCHEDULED"
       ),
       TimetableSession(
@@ -612,7 +612,7 @@ class StudyPilotRepository(
         location = "Lecture Theatre 2",
         notes = "Weekly assignment problem sets.",
         recurringDays = "Tue,Thu",
-        reminderMinutes = 30,
+        reminderMinutes = 0,
         status = "SCHEDULED"
       ),
       TimetableSession(
@@ -626,7 +626,7 @@ class StudyPilotRepository(
         location = "Specialized Research Lab",
         notes = "Laboratory experiment and group collaboration.",
         recurringDays = "Wed",
-        reminderMinutes = 15,
+        reminderMinutes = 0,
         status = "SCHEDULED"
       )
     )

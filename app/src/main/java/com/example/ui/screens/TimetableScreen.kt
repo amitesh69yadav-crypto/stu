@@ -2213,7 +2213,7 @@ fun SessionEditDialog(
   var location by remember { mutableStateOf(sessionToEdit?.location ?: "Campus") }
   var notes by remember { mutableStateOf(sessionToEdit?.notes ?: "") }
   var recurringDays by remember { mutableStateOf(sessionToEdit?.recurringDays ?: "Mon,Wed,Fri") }
-  var reminderMinutes by remember { mutableIntStateOf(sessionToEdit?.reminderMinutes ?: 15) }
+  var reminderMinutes by remember { mutableIntStateOf(sessionToEdit?.reminderMinutes ?: 0) }
   var isAlarmEnabled by remember { mutableStateOf(sessionToEdit?.isAlarmEnabled ?: true) }
 
   var expandedDropdown by remember { mutableStateOf(false) }
@@ -2432,7 +2432,7 @@ fun SessionEditDialog(
                 color = PaletteDarkText
               )
               Text(
-                text = "Mobile alarm will ring at ${startTime}",
+                text = "Mobile alarm will ring exactly at ${startTime} when event starts",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
                 color = PaletteDarkText

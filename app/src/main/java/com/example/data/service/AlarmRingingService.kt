@@ -224,10 +224,10 @@ class AlarmRingingService : Service() {
 
     return NotificationCompat.Builder(this, CHANNEL_ID)
       .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-      .setContentTitle("⏰ ALARM: ${session.subjectName}")
-      .setContentText("${session.topic} (${session.startTime})")
+      .setContentTitle("⏰ EVENT STARTING NOW: ${session.subjectName}")
+      .setContentText("${session.topic} (Started at ${session.startTime})")
       .setStyle(NotificationCompat.BigTextStyle().bigText(
-        "Scheduled Event: ${session.topic}\nTime: ${session.startTime} - ${session.endTime}\nLocation: ${session.location.ifBlank { "Mobile" }}"
+        "Event Starting Now: ${session.topic}\nScheduled: ${session.startTime} - ${session.endTime}\nLocation: ${session.location.ifBlank { "Mobile" }}"
       ))
       .setPriority(NotificationCompat.PRIORITY_MAX)
       .setCategory(NotificationCompat.CATEGORY_ALARM)
