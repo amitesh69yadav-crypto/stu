@@ -232,11 +232,12 @@ private fun CodeBlockView(
       }
 
       // Code body with horizontal scroll
+      val scrollState = remember(code) { androidx.compose.foundation.ScrollState(0) }
       Box(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = 12.dp, vertical = 10.dp)
-          .horizontalScroll(rememberScrollState())
+          .horizontalScroll(scrollState)
       ) {
         Text(
           text = code,
@@ -351,24 +352,7 @@ private fun ParagraphView(text: String, isUser: Boolean) {
 @Composable
 private fun TableView(table: MarkdownBlock.Table, isUser: Boolean) {
   val containerBg = if (isUser) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
-  val headerBg = if (isUser) Color.White.copy(alpha = 0.22f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
   val borderColor = if (isUser) Color.White.copy(alpha = 0.25f) else MaterialTheme.colorScheme.outlineVariant
-  val rowAltBg = if (isUser) Color.White.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-
-  // Calculate dynamic column widths based on maximum string length per column so words never break awkwardly
-  val columnWidths = remember(table) {
-    table.headers.indices.map { colIdx ->
-      val headerLen = table.headers.getOrElse(colIdx) { "" }.length
-      val maxRowLen = table.rows.maxOfOrNull { row -> row.getOrElse(colIdx) { "" }.length } ?: 0
-      val maxLen = maxOf(headerLen, maxRowLen)
-      when {
-        maxLen > 30 -> 240.dp
-        maxLen > 20 -> 180.dp
-        maxLen > 12 -> 140.dp
-        else -> 115.dp
-      }
-    }
-  }
 
   Card(
     modifier = Modifier
@@ -379,117 +363,54 @@ private fun TableView(table: MarkdownBlock.Table, isUser: Boolean) {
     border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
   ) {
-    Box(
+    Column(
       modifier = Modifier
         .fillMaxWidth()
-        .horizontalScroll(rememberScrollState())
+        .padding(12.dp),
+      verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-      Column {
-        // Header Row
-        Row(
-          modifier = Modifier
-            .background(headerBg)
-            .height(IntrinsicSize.Min)
-            .padding(vertical = 8.dp),
-          verticalAlignment = Alignment.CenterVertically
+      table.rows.forEachIndexed { rowIdx, rowCells ->
+        Surface(
+          shape = RoundedCornerShape(8.dp),
+          color = if (isUser) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+          modifier = Modifier.fillMaxWidth()
         ) {
-          table.headers.forEachIndexed { colIdx, headerText ->
-            val colWidth = columnWidths.getOrElse(colIdx) { 130.dp }
-            val align = table.alignments.getOrElse(colIdx) { TableCellAlignment.LEFT }
-            val textAlign = when (align) {
-              TableCellAlignment.CENTER -> androidx.compose.ui.text.style.TextAlign.Center
-              TableCellAlignment.RIGHT -> androidx.compose.ui.text.style.TextAlign.End
-              else -> androidx.compose.ui.text.style.TextAlign.Start
-            }
-            Box(
-              modifier = Modifier
-                .width(colWidth)
-                .padding(horizontal = 12.dp, vertical = 2.dp),
-              contentAlignment = when (align) {
-                TableCellAlignment.CENTER -> Alignment.Center
-                TableCellAlignment.RIGHT -> Alignment.CenterEnd
-                else -> Alignment.CenterStart
-              }
-            ) {
-              Text(
-                text = parseInlineMarkdown(headerText, isUser = isUser),
-                style = MaterialTheme.typography.labelLarge.copy(
-                  fontWeight = FontWeight.Bold,
-                  fontSize = 12.sp,
-                  textAlign = textAlign
-                ),
-                color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-              )
-            }
-            if (colIdx < table.headers.size - 1) {
-              VerticalDivider(
-                color = borderColor,
-                thickness = 1.dp,
-                modifier = Modifier
-                  .fillMaxHeight()
-                  .padding(vertical = 2.dp)
-              )
-            }
-          }
-        }
-
-        HorizontalDivider(color = borderColor, thickness = 1.dp)
-
-        // Data Rows
-        table.rows.forEachIndexed { rowIdx, rowCells ->
-          val isEven = rowIdx % 2 == 0
-          val currentBg = if (isEven) Color.Transparent else rowAltBg
-
-          Row(
+          Column(
             modifier = Modifier
-              .background(currentBg)
-              .height(IntrinsicSize.Min)
-              .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+              .fillMaxWidth()
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
           ) {
             table.headers.indices.forEach { colIdx ->
+              val headerText = table.headers.getOrElse(colIdx) { "" }
               val cellText = rowCells.getOrElse(colIdx) { "" }
-              val colWidth = columnWidths.getOrElse(colIdx) { 130.dp }
-              val align = table.alignments.getOrElse(colIdx) { TableCellAlignment.LEFT }
-              val textAlign = when (align) {
-                TableCellAlignment.CENTER -> androidx.compose.ui.text.style.TextAlign.Center
-                TableCellAlignment.RIGHT -> androidx.compose.ui.text.style.TextAlign.End
-                else -> androidx.compose.ui.text.style.TextAlign.Start
-              }
-              Box(
-                modifier = Modifier
-                  .width(colWidth)
-                  .padding(horizontal = 12.dp, vertical = 4.dp),
-                contentAlignment = when (align) {
-                  TableCellAlignment.CENTER -> Alignment.Center
-                  TableCellAlignment.RIGHT -> Alignment.CenterEnd
-                  else -> Alignment.CenterStart
+              if (headerText.isNotBlank() || cellText.isNotBlank()) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                  Text(
+                    text = parseInlineMarkdown(headerText, isUser = isUser),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                      fontWeight = FontWeight.Bold,
+                      fontSize = 11.sp
+                    ),
+                    color = if (isUser) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(0.4f)
+                  )
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text(
+                    text = parseInlineMarkdown(cellText, isUser = isUser),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                      fontSize = 12.sp,
+                      lineHeight = 16.sp
+                    ),
+                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(0.6f)
+                  )
                 }
-              ) {
-                Text(
-                  text = parseInlineMarkdown(cellText, isUser = isUser),
-                  style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    textAlign = textAlign
-                  ),
-                  color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
-              }
-              if (colIdx < table.headers.size - 1) {
-                VerticalDivider(
-                  color = borderColor.copy(alpha = 0.5f),
-                  thickness = 0.8.dp,
-                  modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(vertical = 2.dp)
-                )
               }
             }
-          }
-
-          if (rowIdx < table.rows.size - 1) {
-            HorizontalDivider(color = borderColor.copy(alpha = 0.4f), thickness = 0.5.dp)
           }
         }
       }

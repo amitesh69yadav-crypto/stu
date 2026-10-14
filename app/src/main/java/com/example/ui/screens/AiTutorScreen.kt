@@ -1166,7 +1166,7 @@ private fun ChatMessageBubble(
     }
 
     Column(
-      modifier = Modifier.widthIn(max = 330.dp),
+      modifier = if (isUser) Modifier.widthIn(max = 280.dp) else Modifier.fillMaxWidth().weight(1f),
       horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
       // Model & Source Badge
