@@ -752,7 +752,7 @@ fun SettingsScreen(
                 value = inputGroqKey,
                 onValueChange = { inputGroqKey = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("gsk_...", fontSize = 12.sp) },
+                placeholder = { Text("Enter Groq API Key", fontSize = 12.sp) },
                 singleLine = true,
                 visualTransformation = if (showGroqKeyPassword) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                 trailingIcon = {

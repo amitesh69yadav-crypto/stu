@@ -61,7 +61,7 @@ class GeminiStudyService {
     return if (sanitized.isNotBlank() && sanitized != "MY_GROQ_API_KEY") {
       sanitized
     } else {
-      "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"
+      ""
     }
   }
 

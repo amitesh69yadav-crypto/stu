@@ -19,6 +19,16 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+
+  private val FIRESTORE_DB_ID = "ai-studio-android-studypil-1b9a5a78-c2bd-40f4-9199-e1b41747056c"
+  private fun getFirestoreInstance(): com.google.firebase.firestore.FirebaseFirestore {
+    return try {
+      com.google.firebase.firestore.FirebaseFirestore.getInstance(FIRESTORE_DB_ID)
+    } catch (_: Exception) {
+      getFirestoreInstance()
+    }
+  }
+
 class StudyPilotRepository(
   private val dao: StudyPilotDao,
   val geminiService: GeminiStudyService = GeminiStudyService()
@@ -54,7 +64,7 @@ class StudyPilotRepository(
 
   private fun syncToFirestore(path: String, data: Map<String, Any?>) {
     try {
-      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      val firestore = getFirestoreInstance()
       firestore.document(path).set(data)
     } catch (_: Exception) {
       // Offline fallback
@@ -63,7 +73,7 @@ class StudyPilotRepository(
 
   private fun deleteFromFirestore(path: String) {
     try {
-      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      val firestore = getFirestoreInstance()
       firestore.document(path).delete()
     } catch (_: Exception) {
       // Offline fallback
@@ -79,7 +89,7 @@ class StudyPilotRepository(
     dao.deleteTutorSessionsForUser(userId)
     dao.deleteScheduleFormatsForUser(userId)
     try {
-      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      val firestore = getFirestoreInstance()
       firestore.document("users/$userId").delete()
       firestore.collection("users/$userId/subjects").get().addOnSuccessListener { snap ->
         for (doc in snap.documents) doc.reference.delete()
@@ -99,7 +109,7 @@ class StudyPilotRepository(
   suspend fun pullUserDataFromFirestore(userId: String) {
     if (userId.isBlank()) return
     try {
-      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      val firestore = getFirestoreInstance()
       // Pull remote subjects
       val subjectsSnap = firestore.collection("users/$userId/subjects").get().awaitTask()
       if (!subjectsSnap.isEmpty) {
