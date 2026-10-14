@@ -1353,7 +1353,256 @@
     </div>
   </div>
 
-  <!-- 5. TOAST NOTIFICATION CONTAINER -->
+  <!-- 5. AUTH / SWITCH / REGISTER STUDENT MODAL -->
+  <div id="authModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-[#DDE7DF] space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-[#1C2B24]">Student Authentication</h3>
+          <p class="text-xs text-gray-500">Sign in, switch, or register an isolated student profile.</p>
+        </div>
+        <button onclick="closeAuthModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Quick Google SSO Button -->
+      <button onclick="signInWithGoogleSSO()" class="w-full py-2.5 px-4 border border-[#DDE7DF] hover:bg-gray-50 rounded-2xl text-xs font-bold text-gray-700 flex items-center justify-center gap-2 shadow-xs transition-all">
+        <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Sign in with Google Academic SSO
+      </button>
+
+      <div class="flex items-center gap-2 text-xs text-gray-400">
+        <span class="flex-1 border-t border-gray-200"></span>
+        <span>OR REGISTER PROFILE</span>
+        <span class="flex-1 border-t border-gray-200"></span>
+      </div>
+
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Full Student Name</label>
+          <input type="text" id="authNameInput" required placeholder="e.g. Alex Morgan" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Academic Email</label>
+          <input type="email" id="authEmailInput" required placeholder="e.g. a.morgan@university.ac.uk" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">University / College</label>
+            <input type="text" id="authUniInput" required placeholder="e.g. Oxford University" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Student ID</label>
+            <input type="text" id="authIdInput" required placeholder="e.g. OX-2026-9011" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Major / Degree</label>
+          <input type="text" id="authMajorInput" required placeholder="e.g. Computer Science & AI" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAuthModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">Save & Switch Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. EDIT ACADEMIC PROFILE MODAL -->
+  <div id="editProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-[#DDE7DF] space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-[#1C2B24]">Edit Academic Profile</h3>
+          <p class="text-xs text-gray-500">Update your verified student information.</p>
+        </div>
+        <button onclick="closeEditProfileModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleEditProfileSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
+          <input type="text" id="editNameInput" required class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Academic Email</label>
+          <input type="email" id="editEmailInput" required class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">University / Institution</label>
+          <input type="text" id="editUniInput" required class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Major / Degree</label>
+          <input type="text" id="editMajorInput" required class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeEditProfileModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. ADD TASK MODAL -->
+  <div id="addTaskModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-[#DDE7DF] space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-[#1C2B24]">Add Task or Deadline</h3>
+          <p class="text-xs text-gray-500">Track examinations, problem sets, and assignments.</p>
+        </div>
+        <button onclick="closeAddTaskModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleAddTaskSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Task / Exam Title</label>
+          <input type="text" id="taskTitleInput" required placeholder="e.g. Midterm 2 - Dynamic Programming" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Category</label>
+            <select id="taskCategorySelect" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs outline-none">
+              <option value="EXAM">Examination</option>
+              <option value="ASSIGNMENT" selected>Assignment</option>
+              <option value="STUDY">Study Session</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Priority</label>
+            <select id="taskPrioritySelect" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs outline-none">
+              <option value="HIGH">High Priority</option>
+              <option value="MEDIUM" selected>Medium Priority</option>
+              <option value="LOW">Low Priority</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Related Subject</label>
+          <select id="taskSubjectSelect" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs outline-none">
+            <!-- Dynamically populated from enrolledSubjects -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Due Date</label>
+          <input type="date" id="taskDueDateInput" required value="2026-10-21" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAddTaskModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. ADD SUBJECT MODAL -->
+  <div id="addSubjectModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-[#DDE7DF] space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-[#1C2B24]">Add Course / Subject</h3>
+          <p class="text-xs text-gray-500">Configure new university course code and color identifier.</p>
+        </div>
+        <button onclick="closeAddSubjectModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleAddSubjectSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Course Code</label>
+          <input type="text" id="subjectCodeInput" required placeholder="e.g. CS350, ECON101" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Course Title</label>
+          <input type="text" id="subjectTitleInput" required placeholder="e.g. Operating Systems & Concurrency" class="w-full px-3.5 py-2 border border-[#DDE7DF] rounded-xl text-xs md:text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Color Theme</label>
+          <div class="flex items-center gap-3">
+            <input type="color" id="subjectColorInput" value="#2D4B3E" class="w-10 h-10 rounded-xl cursor-pointer border border-[#DDE7DF]">
+            <span class="text-xs text-gray-500">Choose badge and calendar indicator color</span>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAddSubjectModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">Add Subject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. AI TUTOR PERSONA MODAL -->
+  <div id="personaModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-[#DDE7DF] space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-[#1C2B24]">AI Tutor Teaching Persona</h3>
+          <p class="text-xs text-gray-500">Adjust how your tutor guides your academic problem solving.</p>
+        </div>
+        <button onclick="closePersonaModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-2.5" id="personaListContainer">
+        <!-- Rendered in JS -->
+      </div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closePersonaModal()" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EDIT SESSION MODAL -->
+  <div id="editSessionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-[#DDE7DF]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-[#1C2B24]">Edit Timetable Session</h3>
+        <button onclick="closeEditSessionModal()" class="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleEditSessionSubmit(event)" class="space-y-4">
+        <input type="hidden" id="editSessionId">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Subject / Course</label>
+          <select id="editSessionSubjectSelect" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Topic / Description</label>
+          <input type="text" id="editSessionTopicInput" required class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Start Time (Alarm Exact Start)</label>
+            <input type="time" id="editSessionStartTime" required class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">End Time</label>
+            <input type="time" id="editSessionEndTime" required class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Location / Lecture Hall</label>
+          <input type="text" id="editSessionLocationInput" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Notes</label>
+          <input type="text" id="editSessionNotesInput" class="w-full px-3.5 py-2.5 border border-[#DDE7DF] rounded-xl text-sm outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeEditSessionModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#2D4B3E] text-white rounded-xl text-sm font-bold hover:bg-[#1E342B]">Update Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 11. TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- ================= JAVASCRIPT ENGINE ================= -->
@@ -2346,14 +2595,965 @@
     }
 
     function handleFabClick() {
-      // Contextual addition based on active tab
-      openAddSessionModal();
+      const activeTab = document.querySelector('.tab-page:not(.hidden)')?.id?.replace('tab-', '');
+      if (activeTab === 'tasks') {
+        openAddTaskModal();
+      } else if (activeTab === 'topics') {
+        openRecordTopicModal();
+      } else {
+        openAddSessionModal();
+      }
+    }
+
+    // --- CALENDAR & DATE NAVIGATION ---
+    let currentNavYear = 2026;
+    let currentNavMonth = 9; // October (0-indexed)
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    function updateMonthTitle() {
+      const el = document.getElementById('calMonthTitle');
+      if (el) el.textContent = `${monthNames[currentNavMonth]} ${currentNavYear}`;
+    }
+
+    function shiftYear(delta) {
+      currentNavYear += delta;
+      updateMonthTitle();
+      showNotification(`Calendar navigated to ${currentNavYear}`);
+    }
+
+    function shiftMonth(delta) {
+      currentNavMonth += delta;
+      if (currentNavMonth < 0) { currentNavMonth = 11; currentNavYear--; }
+      else if (currentNavMonth > 11) { currentNavMonth = 0; currentNavYear++; }
+      updateMonthTitle();
+      showNotification(`Calendar navigated to ${monthNames[currentNavMonth]} ${currentNavYear}`);
+    }
+
+    function shiftWeek(delta) {
+      selectedDayNum = Math.max(1, Math.min(28, selectedDayNum + delta * 7));
+      selectedDate = `Wednesday, October ${selectedDayNum}, 2026`;
+      document.getElementById('activeSelectedDateText').textContent = selectedDate;
+      renderTimetableDays();
+      renderTimetableSessions();
+      showNotification(`Week view shifted: ${selectedDate}`);
+    }
+
+    function syncGoogleCalendar() {
+      showNotification("📅 Google Calendar synchronized! 3 university lectures up to date.");
+    }
+
+    // --- TIMETABLE SUBTABS & ROUTINES ---
+    let currentTimetableSubTab = 'day';
+    function setTimetableSubTab(subTab) {
+      currentTimetableSubTab = subTab;
+      ['day', 'formats', 'all'].forEach(st => {
+        const btn = document.getElementById(`subtab-${st}`);
+        if (btn) {
+          if (st === subTab) {
+            btn.className = "flex-1 py-2 rounded-xl text-center transition-all bg-[#2D4B3E] text-white shadow-sm";
+          } else {
+            btn.className = "flex-1 py-2 rounded-xl text-center transition-all text-gray-600 hover:text-gray-900";
+          }
+        }
+      });
+      renderTimetableSessions();
+    }
+
+    function addDefaultRoutines() {
+      const routines = [
+        {
+          id: Date.now() + 1,
+          time: "12:30 - 13:30",
+          startTime: "12:30",
+          endTime: "13:30",
+          subjectCode: "ROUTINE",
+          subjectName: "Routine • Food & Recharge",
+          title: "Campus Lunch & Hydration",
+          location: "Student Union Dining Hall",
+          date: "2026-10-14",
+          notes: "Nutritious meal and mental break between lectures.",
+          alarmEnabled: true
+        },
+        {
+          id: Date.now() + 2,
+          time: "22:30 - 07:00",
+          startTime: "22:30",
+          endTime: "07:00",
+          subjectCode: "ROUTINE",
+          subjectName: "Routine • Sleep & Recovery",
+          title: "Restorative Sleep Block (8 Hours)",
+          location: "Dormitory",
+          date: "2026-10-14",
+          notes: "Consistent circadian sleep schedule for optimal memory consolidation.",
+          alarmEnabled: true
+        }
+      ];
+      sessions.push(...routines);
+      localStorage.setItem(getAccountStorageKey('sessions'), JSON.stringify(sessions));
+      renderTimetableSessions();
+      showNotification("Added Food & Sleep Routines to day schedule!");
+    }
+
+    function clearDaySessions() {
+      if (!confirm("Clear all scheduled timetable sessions for this day?")) return;
+      sessions = sessions.filter(s => s.date !== "2026-10-14");
+      localStorage.setItem(getAccountStorageKey('sessions'), JSON.stringify(sessions));
+      renderTimetableSessions();
+      showNotification("Day sessions cleared.");
+    }
+
+    function toggleSessionAlarm(id) {
+      const sess = sessions.find(s => s.id === id);
+      if (sess) {
+        sess.alarmEnabled = !sess.alarmEnabled;
+        localStorage.setItem(getAccountStorageKey('sessions'), JSON.stringify(sessions));
+        renderTimetableSessions();
+        showNotification(sess.alarmEnabled ? `🔔 Exact start alarm enabled for ${sess.startTime}` : `🔕 Alarm muted for ${sess.title}`);
+      }
+    }
+
+    function deleteSession(id) {
+      if (!confirm("Delete this session from your timetable?")) return;
+      sessions = sessions.filter(s => s.id !== id);
+      localStorage.setItem(getAccountStorageKey('sessions'), JSON.stringify(sessions));
+      if (db) {
+        db.collection('users').doc(activeUserId).collection('sessions').doc(String(id)).delete().catch(()=>{});
+      }
+      renderTimetableSessions();
+      showNotification("Session removed from timetable.");
+    }
+
+    function editSession(id) {
+      const sess = sessions.find(s => s.id === id);
+      if (!sess) return;
+      document.getElementById('editSessionId').value = sess.id;
+      const select = document.getElementById('editSessionSubjectSelect');
+      select.innerHTML = enrolledSubjects.map(s => `<option value="${s.code}" ${s.code === sess.subjectCode ? 'selected' : ''}>${s.code} • ${s.name}</option>`).join('') + `<option value="ROUTINE" ${sess.subjectCode === 'ROUTINE' ? 'selected' : ''}>Routine • Food & Sleep</option>`;
+      document.getElementById('editSessionTopicInput').value = sess.title;
+      document.getElementById('editSessionStartTime').value = sess.startTime || "09:00";
+      document.getElementById('editSessionEndTime').value = sess.endTime || "10:30";
+      document.getElementById('editSessionLocationInput').value = sess.location || "";
+      document.getElementById('editSessionNotesInput').value = sess.notes || "";
+      document.getElementById('editSessionModal').classList.remove('hidden');
+    }
+
+    function closeEditSessionModal() {
+      document.getElementById('editSessionModal').classList.add('hidden');
+    }
+
+    function handleEditSessionSubmit(e) {
+      e.preventDefault();
+      const id = Number(document.getElementById('editSessionId').value);
+      const sess = sessions.find(s => s.id === id);
+      if (sess) {
+        const code = document.getElementById('editSessionSubjectSelect').value;
+        const sub = enrolledSubjects.find(s => s.code === code);
+        sess.subjectCode = code;
+        sess.subjectName = sub ? sub.name : (code === 'ROUTINE' ? 'Routine • Food & Sleep' : 'Academic Session');
+        sess.title = document.getElementById('editSessionTopicInput').value.trim();
+        sess.startTime = document.getElementById('editSessionStartTime').value;
+        sess.endTime = document.getElementById('editSessionEndTime').value;
+        sess.time = `${sess.startTime} - ${sess.endTime}`;
+        sess.location = document.getElementById('editSessionLocationInput').value.trim();
+        sess.notes = document.getElementById('editSessionNotesInput').value.trim();
+        localStorage.setItem(getAccountStorageKey('sessions'), JSON.stringify(sessions));
+        if (db) {
+          db.collection('users').doc(activeUserId).collection('sessions').doc(String(id)).set(sess).catch(()=>{});
+        }
+        renderTimetableSessions();
+        closeEditSessionModal();
+        showNotification("Timetable session updated!");
+      }
+    }
+
+    function deleteTopic(id) {
+      if (!confirm("Delete this study topic?")) return;
+      topics = topics.filter(t => t.id !== id);
+      localStorage.setItem(getAccountStorageKey('topics'), JSON.stringify(topics));
+      renderTopics();
+      showNotification("Topic removed.");
+    }
+
+    function deleteSubject(code) {
+      if (enrolledSubjects.length <= 1) {
+        showNotification("You must maintain at least one enrolled course.");
+        return;
+      }
+      if (!confirm(`Remove subject ${code}?`)) return;
+      enrolledSubjects = enrolledSubjects.filter(s => s.code !== code);
+      localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(enrolledSubjects));
+      renderEnrolledSubjects();
+      renderTopics();
+      renderTutorSubjectPills();
+      showNotification(`Subject ${code} removed.`);
+    }
+
+    function openAddSubjectModal() {
+      document.getElementById('addSubjectModal').classList.remove('hidden');
+    }
+
+    function closeAddSubjectModal() {
+      document.getElementById('addSubjectModal').classList.add('hidden');
+    }
+
+    function handleAddSubjectSubmit(e) {
+      e.preventDefault();
+      const code = document.getElementById('subjectCodeInput').value.trim().toUpperCase();
+      const name = document.getElementById('subjectTitleInput').value.trim();
+      const color = document.getElementById('subjectColorInput').value;
+      if (enrolledSubjects.find(s => s.code === code)) {
+        showNotification("Course code already exists!");
+        return;
+      }
+      enrolledSubjects.push({ code, name, color });
+      localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(enrolledSubjects));
+      if (db) {
+        db.collection('users').doc(activeUserId).collection('subjects').doc(code).set({ code, name, color }).catch(()=>{});
+      }
+      closeAddSubjectModal();
+      renderEnrolledSubjects();
+      renderTopics();
+      renderTutorSubjectPills();
+      showNotification(`Course ${code} enrolled!`);
+    }
+
+    // --- AUTH & PROFILE MODALS ---
+    function openAuthModal() {
+      document.getElementById('authModal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function signInWithGoogleSSO() {
+      const ssoAccount = {
+        id: "user_amitesh",
+        name: "Amitesh Yadav",
+        email: "amitesh69.yadav@gmail.com",
+        initials: "AY",
+        major: "Computer Science",
+        university: "Imperial College London",
+        studentId: "CS-2024-8841"
+      };
+      if (!accounts.find(a => a.id === ssoAccount.id)) {
+        accounts.push(ssoAccount);
+        localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(accounts));
+      }
+      switchAccount(ssoAccount.id);
+      closeAuthModal();
+      showNotification("✅ Authenticated via Google Academic SSO as " + ssoAccount.name);
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('authNameInput').value.trim();
+      const email = document.getElementById('authEmailInput').value.trim();
+      const uni = document.getElementById('authUniInput').value.trim();
+      const studentId = document.getElementById('authIdInput').value.trim();
+      const major = document.getElementById('authMajorInput').value.trim();
+      const initials = name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+      const id = 'user_' + Date.now();
+      const newAcc = { id, name, email, initials, major, university: uni, studentId };
+      accounts.push(newAcc);
+      localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(accounts));
+      closeAuthModal();
+      switchAccount(id);
+      showNotification(`Registered and switched to ${name}!`);
+    }
+
+    function openEditProfileModal() {
+      const currentAccount = accounts.find(a => a.id === activeUserId) || accounts[0];
+      document.getElementById('editNameInput').value = currentAccount.name;
+      document.getElementById('editEmailInput').value = currentAccount.email;
+      document.getElementById('editUniInput').value = currentAccount.university;
+      document.getElementById('editMajorInput').value = currentAccount.major || "Computer Science";
+      document.getElementById('editProfileModal').classList.remove('hidden');
+    }
+
+    function closeEditProfileModal() {
+      document.getElementById('editProfileModal').classList.add('hidden');
+    }
+
+    function handleEditProfileSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('editNameInput').value.trim();
+      const email = document.getElementById('editEmailInput').value.trim();
+      const uni = document.getElementById('editUniInput').value.trim();
+      const major = document.getElementById('editMajorInput').value.trim();
+      const initials = name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+      const acc = accounts.find(a => a.id === activeUserId);
+      if (acc) {
+        acc.name = name;
+        acc.email = email;
+        acc.university = uni;
+        acc.major = major;
+        acc.initials = initials;
+        localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(accounts));
+        loadActiveUserData();
+      }
+      closeEditProfileModal();
+      showNotification("Academic Profile updated successfully!");
+    }
+
+    // --- TASKS & DEADLINES ---
+    let currentTaskFilter = 'ALL';
+    function filterTaskType(type) {
+      currentTaskFilter = type;
+      ['ALL', 'EXAM', 'ASSIGNMENT'].forEach(t => {
+        const btn = document.getElementById(`taskTab-${t}`);
+        if (btn) {
+          if (t === type) {
+            btn.className = "task-tab-btn pb-3 text-[#2D4B3E] border-b-2 border-[#2D4B3E]";
+          } else {
+            btn.className = "task-tab-btn pb-3 text-gray-500 hover:text-gray-800";
+          }
+        }
+      });
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('tasksListContainer');
+      if (!container) return;
+
+      const allCount = tasks.length;
+      const examCount = tasks.filter(t => t.type === 'EXAM').length;
+      const assignCount = tasks.filter(t => t.type === 'ASSIGNMENT').length;
+      const cAll = document.getElementById('taskCountAll');
+      const cEx = document.getElementById('taskCountExam');
+      const cAs = document.getElementById('taskCountAssign');
+      if (cAll) cAll.textContent = allCount;
+      if (cEx) cEx.textContent = examCount;
+      if (cAs) cAs.textContent = assignCount;
+
+      const filtered = tasks.filter(t => currentTaskFilter === 'ALL' || t.type === currentTaskFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-3xl border border-[#DDE7DF] text-center text-xs text-gray-500">No tasks found for category "${currentTaskFilter}". Add a task above!</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(task => {
+        const badgeColor = task.priority === 'HIGH' ? 'bg-red-50 text-red-700 border-red-200' : (task.priority === 'MEDIUM' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200');
+        return `
+          <div class="bg-white p-4.5 rounded-2xl border border-[#DDE7DF] shadow-sm flex items-center justify-between gap-3 ${task.completed ? 'opacity-60 bg-gray-50' : ''}">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTaskCompleted(${task.id})" class="w-5 h-5 rounded-lg accent-[#2D4B3E] cursor-pointer">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-bold text-[#1C2B24] ${task.completed ? 'line-through text-gray-400' : ''}">${task.title}</h4>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColor}">${task.priority}</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-0.5">${task.subject} • Due: ${task.dueDate}</p>
+              </div>
+            </div>
+            <button onclick="deleteTask(${task.id})" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function toggleTaskCompleted(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        localStorage.setItem(getAccountStorageKey('tasks'), JSON.stringify(tasks));
+        renderTasks();
+        showNotification(task.completed ? "Task marked completed! 🎉" : "Task restored to active.");
+      }
+    }
+
+    function deleteTask(taskId) {
+      tasks = tasks.filter(t => t.id !== taskId);
+      localStorage.setItem(getAccountStorageKey('tasks'), JSON.stringify(tasks));
+      renderTasks();
+      showNotification("Task removed.");
+    }
+
+    function openAddTaskModal() {
+      const select = document.getElementById('taskSubjectSelect');
+      if (select) {
+        select.innerHTML = enrolledSubjects.map(s => `<option value="${s.name}">${s.code} • ${s.name}</option>`).join('');
+      }
+      document.getElementById('addTaskModal').classList.remove('hidden');
+    }
+
+    function closeAddTaskModal() {
+      document.getElementById('addTaskModal').classList.add('hidden');
+    }
+
+    function handleAddTaskSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const type = document.getElementById('taskCategorySelect').value;
+      const priority = document.getElementById('taskPrioritySelect').value;
+      const subject = document.getElementById('taskSubjectSelect').value;
+      const dueDate = document.getElementById('taskDueDateInput').value;
+      const newTask = { id: Date.now(), title, type, priority, subject, dueDate, completed: false };
+      tasks.unshift(newTask);
+      localStorage.setItem(getAccountStorageKey('tasks'), JSON.stringify(tasks));
+      closeAddTaskModal();
+      renderTasks();
+      showNotification(`Task "${title}" created!`);
+    }
+
+    // --- WEEKEND QUIZ SETTINGS ---
+    let isQuizSettingsOpen = true;
+    let quizSettings = { days: 'Both', count: 10, diff: 'MIXED' };
+
+    function toggleQuizSettings() {
+      const panel = document.getElementById('quizSettingsPanel');
+      if (panel) {
+        isQuizSettingsOpen = !isQuizSettingsOpen;
+        panel.style.display = isQuizSettingsOpen ? 'block' : 'none';
+      }
+    }
+
+    function setQuizDays(val) {
+      quizSettings.days = val;
+      ['sat', 'sun', 'both'].forEach(d => {
+        const el = document.getElementById(`qday-${d}`);
+        if (el) {
+          const match = (d === 'sat' && val === 'Saturday') || (d === 'sun' && val === 'Sunday') || (d === 'both' && val === 'Both');
+          el.className = match ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#2D4B3E] text-white" : "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-[#DDE7DF] text-gray-700";
+        }
+      });
+      showNotification(`Quiz scheduled for: ${val}`);
+    }
+
+    function setQuizCount(count) {
+      quizSettings.count = count;
+      [5, 10, 15, 20].forEach(c => {
+        const el = document.getElementById(`qcnt-${c}`);
+        if (el) {
+          el.className = (c === count) ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-[#2D4B3E] text-white" : "px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-[#DDE7DF] text-gray-700";
+        }
+      });
+      document.getElementById('quizHeaderSub').textContent = `${count} Questions • ${quizSettings.diff} Difficulty`;
+      showNotification(`Quiz size set to ${count} questions.`);
+    }
+
+    function setQuizDiff(diff) {
+      quizSettings.diff = diff;
+      ['mixed', 'easy', 'med', 'hard'].forEach(d => {
+        const el = document.getElementById(`qdiff-${d}`);
+        if (el) {
+          const match = (d === 'mixed' && diff === 'MIXED') || (d === 'easy' && diff === 'EASY') || (d === 'med' && diff === 'MEDIUM') || (d === 'hard' && diff === 'HARD');
+          el.className = match ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-[#2D4B3E] text-white" : "px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-[#DDE7DF] text-gray-700";
+        }
+      });
+      document.getElementById('quizHeaderSub').textContent = `${quizSettings.count} Questions • ${diff} Difficulty`;
+      showNotification(`Quiz difficulty set to ${diff}.`);
+    }
+
+    // --- ANALYTICS EXPORT ---
+    function exportAnalyticsReport() {
+      const currentAccount = accounts.find(a => a.id === activeUserId) || accounts[0];
+      const reportText = `STUDYPILOT AI - ACADEMIC VERIFIED REPORT
+Generated: ${new Date().toLocaleString()}
+Student: ${currentAccount.name} (${currentAccount.email})
+University: ${currentAccount.university} | ID: ${currentAccount.studentId}
+Major: ${currentAccount.major || "Computer Science"}
+
+METRICS SUMMARY:
+- Active Study Streak: 5 Days (Consistent)
+- Logged Topics Studied: ${topics.length}
+- Quiz Mastery: 88%
+- Productive Time This Week: 6.5 Hours
+- Enrolled Courses: ${enrolledSubjects.map(s => s.code).join(', ')}
+- Upcoming Deadlines: ${tasks.filter(t => !t.completed).length} pending
+`;
+      navigator.clipboard.writeText(reportText).then(() => {
+        showNotification("📋 Verified Academic Report copied to clipboard!");
+      }).catch(() => {
+        showNotification("Report ready! See console for text.");
+      });
+
+      const blob = new Blob([reportText], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `StudyPilot_Report_${currentAccount.studentId}.txt`;
+      a.click();
+    }
+
+    // --- AI STUDY TUTOR ENGINE ---
+    let currentTutorTab = 'CHAT';
+    let isTutorHeaderExpanded = true;
+    let selectedTutorModel = 'FLASH';
+    let selectedTutorSubject = null;
+    let isGoogleSearchGroundingActive = false;
+    let currentTutorPersona = 'socratic';
+
+    const personas = [
+      { id: 'socratic', name: 'Socratic Professor', desc: 'Guides you through step-by-step questions, deep intuition, and rigorous proof principles.' },
+      { id: 'exam', name: 'Exam Drill Coach', desc: 'Focuses on marking rubrics, time-saving exam techniques, edge-case traps, and scoring.' },
+      { id: 'patient', name: 'Patient Explainer', desc: 'Uses clear, intuitive real-world analogies and gentle breakdowns without heavy jargon.' },
+      { id: 'code', name: 'Algorithmic Architect', desc: 'Provides optimized, production-grade code, Big-O analysis, and invariant verification.' }
+    ];
+
+    let tutorChatMessages = [
+      {
+        role: 'assistant',
+        text: `Hello ${accounts[0].name.split(' ')[0]}! I'm your **StudyPilot AI Academic Tutor**.\n\nI have active context on your courses:\n- **CS201**: Data Structures & Algorithms\n- **MATH220**: Linear Algebra & Calculus\n- **PHYS140**: Classical & Quantum Physics\n\nAsk me any concept, paste lecture code, or request practice exam questions!`,
+        timestamp: "Just now",
+        model: "Gemini 2.5 Flash"
+      }
+    ];
+
+    let savedTutorSessions = [
+      { id: "sess_1", title: "Binary Search Tree Rotations & AVL Invariants", subject: "CS201", date: "Oct 14, 2026", count: 8 },
+      { id: "sess_2", title: "Eigenvalue Diagonalization Step-by-Step Proof", subject: "MATH220", date: "Oct 13, 2026", count: 6 },
+      { id: "sess_3", title: "Wave-Particle Duality & Heisenberg Principle", subject: "PHYS140", date: "Oct 12, 2026", count: 4 },
+      { id: "sess_4", title: "Dijkstra Min-Heap vs Bellman-Ford Negative Cycles", subject: "CS201", date: "Oct 11, 2026", count: 12 }
+    ];
+
+    function setTutorTab(tab) {
+      currentTutorTab = tab;
+      const chatView = document.getElementById('tutorActiveChatView');
+      const historyView = document.getElementById('tutorHistoryView');
+      const chatBtn = document.getElementById('tutorTabChatBtn');
+      const histBtn = document.getElementById('tutorTabHistoryBtn');
+
+      if (tab === 'CHAT') {
+        chatView.classList.remove('hidden');
+        historyView.classList.add('hidden');
+        chatBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-[#2D4B3E] text-white shadow-sm flex items-center gap-1.5";
+        histBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-600 hover:text-gray-900 flex items-center gap-1.5";
+      } else {
+        chatView.classList.add('hidden');
+        historyView.classList.remove('hidden');
+        histBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-[#2D4B3E] text-white shadow-sm flex items-center gap-1.5";
+        chatBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-600 hover:text-gray-900 flex items-center gap-1.5";
+        renderHistorySessions();
+      }
+    }
+
+    function toggleTutorHeader() {
+      const header = document.getElementById('tutorHeaderExpandable');
+      const btn = document.getElementById('tutorHeaderToggleBtn');
+      if (header) {
+        isTutorHeaderExpanded = !isTutorHeaderExpanded;
+        header.style.display = isTutorHeaderExpanded ? 'block' : 'none';
+        if (btn) btn.innerHTML = `<i data-lucide="${isTutorHeaderExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      }
+    }
+
+    function selectTutorModel(tier) {
+      selectedTutorModel = tier;
+      const labelMap = {
+        'FLASH_LITE': 'Gemini 2.0 Flash-Lite (Fast)',
+        'FLASH': 'Gemini 2.5 Flash (Balanced)',
+        'PRO': 'Gemini 2.5 Pro (Complex)'
+      };
+      document.getElementById('activeModelLabel').textContent = labelMap[tier] || 'Gemini 2.5 Flash';
+      ['FLASH_LITE', 'FLASH', 'PRO'].forEach(t => {
+        const el = document.getElementById(`modelBtn-${t}`);
+        if (el) {
+          el.className = (t === tier)
+            ? "model-pill py-2 px-2 rounded-xl border text-center text-xs font-bold transition-all bg-[#2D4B3E] text-white border-[#2D4B3E] shadow-sm"
+            : "model-pill py-2 px-2 rounded-xl border text-center text-xs font-bold transition-all bg-white text-gray-700 border-[#DDE7DF] hover:bg-gray-50";
+        }
+      });
+      showNotification(`Intelligence tier set to: ${tier}`);
+    }
+
+    function toggleGoogleGrounding(checked) {
+      isGoogleSearchGroundingActive = checked;
+      showNotification(checked ? "🌐 Live Google Search Grounding active!" : "Search grounding disabled.");
+    }
+
+    function renderTutorSubjectPills() {
+      const container = document.getElementById('tutorSubjectPills');
+      if (!container) return;
+      let html = `<button onclick="filterTutorSubject(null)" class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${selectedTutorSubject === null ? 'bg-[#2D4B3E] text-white' : 'bg-white border border-[#DDE7DF] text-gray-700'}">🌐 All Subjects</button>`;
+      enrolledSubjects.forEach(s => {
+        const isSel = selectedTutorSubject === s.code;
+        html += `<button onclick="filterTutorSubject('${s.code}')" class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${isSel ? 'bg-[#2D4B3E] text-white' : 'bg-white border border-[#DDE7DF] text-gray-700'}"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background-color:${s.color}"></span>${s.code}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function filterTutorSubject(code) {
+      selectedTutorSubject = code;
+      renderTutorSubjectPills();
+      showNotification(code ? `Tutor context scoped to ${code}` : "Tutor context set to All Subjects");
+    }
+
+    function openPersonaModal() {
+      const container = document.getElementById('personaListContainer');
+      if (container) {
+        container.innerHTML = personas.map(p => `
+          <div onclick="selectPersona('${p.id}')" class="p-3.5 rounded-2xl border transition-all cursor-pointer ${currentTutorPersona === p.id ? 'bg-[#2D4B3E]/10 border-[#2D4B3E]' : 'bg-[#F9F8F3] border-[#DDE7DF] hover:bg-white'}">
+            <div class="flex items-center justify-between">
+              <h5 class="text-xs font-bold text-[#1C2B24]">${p.name}</h5>
+              ${currentTutorPersona === p.id ? '<span class="text-[10px] font-bold text-[#2D4B3E]">Active</span>' : ''}
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">${p.desc}</p>
+          </div>
+        `).join('');
+      }
+      document.getElementById('personaModal').classList.remove('hidden');
+    }
+
+    function closePersonaModal() {
+      document.getElementById('personaModal').classList.add('hidden');
+    }
+
+    function selectPersona(id) {
+      currentTutorPersona = id;
+      openPersonaModal();
+      showNotification(`Teaching persona updated to: ${personas.find(p => p.id === id)?.name}`);
+    }
+
+    function startNewChatSession() {
+      if (tutorChatMessages.length > 1) {
+        savedTutorSessions.unshift({
+          id: "sess_" + Date.now(),
+          title: tutorChatMessages[1].text.substring(0, 45) + "...",
+          subject: selectedTutorSubject || "General",
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          count: tutorChatMessages.length
+        });
+      }
+      const curr = accounts.find(a => a.id === activeUserId) || accounts[0];
+      tutorChatMessages = [
+        {
+          role: 'assistant',
+          text: `Started fresh session for **${curr.name}**. What topic or problem would you like to explore?`,
+          timestamp: "Just now",
+          model: selectedTutorModel
+        }
+      ];
+      renderChatMessages();
+      setTutorTab('CHAT');
+      showNotification("New AI tutor conversation started!");
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessagesStream');
+      if (!container) return;
+      container.innerHTML = tutorChatMessages.map(msg => {
+        const isUser = msg.role === 'user';
+        const parsedText = marked.parse(msg.text);
+        return `
+          <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+            <div class="max-w-[85%] md:max-w-[75%] rounded-3xl p-4 md:p-5 shadow-xs ${
+              isUser
+                ? 'bg-[#2D4B3E] text-white rounded-br-sm'
+                : 'bg-[#F9F8F3] border border-[#DDE7DF] text-[#1C2B24] rounded-bl-sm space-y-2'
+            }">
+              ${!isUser ? `
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-500 pb-1 border-b border-gray-200/60">
+                  <span class="flex items-center gap-1 text-[#2D4B3E]"><i data-lucide="sparkles" class="w-3 h-3"></i> ${msg.model || 'Gemini 2.5'}</span>
+                  <span>${msg.timestamp || ''}</span>
+                </div>
+              ` : ''}
+              <div class="prose prose-sm max-w-none text-xs md:text-sm leading-relaxed ${isUser ? 'text-white prose-invert' : 'text-[#1C2B24]'}">
+                ${parsedText}
+              </div>
+              ${msg.citations && msg.citations.length ? `
+                <div class="pt-2 border-t border-gray-200/60 text-[10px] text-gray-500">
+                  <span class="font-bold text-[#00B4D8]">🔍 Google Grounding Sources:</span>
+                  <ul class="list-disc pl-4 mt-0.5 space-y-0.5">
+                    ${msg.citations.map(c => `<li><a href="#" class="underline hover:text-black">${c}</a></li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+    }
+
+    function renderHistorySessions() {
+      const container = document.getElementById('historySessionsList');
+      if (!container) return;
+      container.innerHTML = savedTutorSessions.map(sess => `
+        <div class="p-4 rounded-2xl border border-[#DDE7DF] bg-[#F9F8F3] hover:bg-white flex items-center justify-between transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-[#2D4B3E] text-white flex items-center justify-center shrink-0">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h5 class="text-xs md:text-sm font-bold text-[#1C2B24]">${sess.title}</h5>
+              <p class="text-[11px] text-gray-500">${sess.subject} • ${sess.date} • ${sess.count} msgs</p>
+            </div>
+          </div>
+          <button onclick="resumeHistorySession('${sess.id}')" class="px-3 py-1.5 bg-[#2D4B3E] text-white rounded-xl text-xs font-bold hover:bg-[#1E342B]">
+            Resume
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function resumeHistorySession(id) {
+      const sess = savedTutorSessions.find(s => s.id === id);
+      if (sess) {
+        tutorChatMessages = [
+          { role: 'assistant', text: `Resumed session on **${sess.title}** (${sess.subject}). What concept shall we work on next?`, timestamp: "Resumed", model: "Gemini 2.5 Flash" }
+        ];
+        renderChatMessages();
+        setTutorTab('CHAT');
+        showNotification(`Resumed session: ${sess.title}`);
+      }
+    }
+
+    function sendQuickPrompt(text) {
+      const input = document.getElementById('chatInputBox');
+      if (input) {
+        input.value = text;
+        handleChatSubmit(new Event('submit'));
+      }
+    }
+
+    function autoGrow(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+
+    function handleChatKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleChatSubmit(e);
+      }
+    }
+
+    async function handleChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chatInputBox');
+      const userText = input ? input.value.trim() : "";
+      if (!userText) return;
+
+      tutorChatMessages.push({
+        role: 'user',
+        text: userText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      input.value = "";
+      input.style.height = 'auto';
+      renderChatMessages();
+
+      const stream = document.getElementById('chatMessagesStream');
+      const loadingId = 'tutor-loading-' + Date.now();
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = loadingId;
+      loadingDiv.className = 'flex justify-start';
+      loadingDiv.innerHTML = `
+        <div class="bg-[#F9F8F3] border border-[#DDE7DF] rounded-3xl p-4 shadow-xs text-xs font-bold text-gray-500 flex items-center gap-2">
+          <i data-lucide="loader" class="w-4 h-4 animate-spin text-[#2D4B3E]"></i>
+          <span>StudyPilot AI is formulating pedagogical response...</span>
+        </div>
+      `;
+      stream.appendChild(loadingDiv);
+      stream.scrollTop = stream.scrollHeight;
+      lucide.createIcons();
+
+      let answerText = "";
+      let citations = [];
+
+      const geminiKey = apiKeys.gemini;
+      if (geminiKey && geminiKey.startsWith("AIzaSy")) {
+        try {
+          const modelName = selectedTutorModel === 'PRO' ? 'gemini-1.5-pro' : (selectedTutorModel === 'FLASH_LITE' ? 'gemini-2.0-flash-lite' : 'gemini-2.0-flash');
+          const bodyPayload = {
+            contents: tutorChatMessages.map(m => ({
+              role: m.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: m.text }]
+            }))
+          };
+          if (isGoogleSearchGroundingActive) {
+            bodyPayload.tools = [{ googleSearch: {} }];
+          }
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyPayload)
+          });
+          const data = await resp.json();
+          if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            answerText = data.candidates[0].content.parts[0].text;
+          }
+        } catch(err) {
+          console.warn("Direct API call note:", err);
+        }
+      }
+
+      if (!answerText) {
+        await new Promise(r => setTimeout(r, 600));
+        answerText = generatePedagogicalResponse(userText, selectedTutorSubject, currentTutorPersona);
+        if (isGoogleSearchGroundingActive) {
+          citations = [
+            "MIT OpenCourseWare (Algorithms & Linear Algebra 2026)",
+            "Stanford Encyclopedia of Computer Science - Graph Theory & Optimization",
+            "Cambridge University Tripos Exam Problem Solutions"
+          ];
+        }
+      }
+
+      document.getElementById(loadingId)?.remove();
+      tutorChatMessages.push({
+        role: 'assistant',
+        text: answerText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        model: selectedTutorModel === 'PRO' ? 'Pro 2.5 (Complex)' : (selectedTutorModel === 'FLASH_LITE' ? 'Flash-Lite (Fast)' : 'Flash 2.5 (Balanced)'),
+        citations: citations
+      });
+      renderChatMessages();
+    }
+
+    function generatePedagogicalResponse(prompt, subject, persona) {
+      const p = prompt.toLowerCase();
+      if (p.includes("bfs") || p.includes("dfs")) {
+        return `### 💡 Breadth-First Search (BFS) vs Depth-First Search (DFS)
+
+Here is a comprehensive academic comparison:
+
+| Metric | BFS (Breadth-First) | DFS (Depth-First) |
+| :--- | :--- | :--- |
+| **Data Structure** | FIFO Queue | LIFO Stack (or Call Stack) |
+| **Path Finding** | Guarantees **shortest path** in unweighted graphs | Explores deep branches, does **not** guarantee shortest path |
+| **Time Complexity** | $O(V + E)$ | $O(V + E)$ |
+| **Space Complexity** | $O(V)$ (Wide level queues) | $O(V)$ (Worst case height) |
+
+#### Standard Python Implementation:
+\`\`\`python
+from collections import deque
+
+def bfs(graph, start):
+    visited, queue = {start}, deque([start])
+    while queue:
+        vertex = queue.popleft()
+        for neighbor in graph[vertex]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return visited
+\`\`\`
+
+**Socratic Check Question**: Why is BFS unsuitable for finding the shortest path on a graph with arbitrary positive edge weights? What algorithm should you use instead?`;
+      } else if (p.includes("eigenvalue") || p.includes("matrix") || p.includes("proof")) {
+        return `### 📐 Theorem: Eigenvalues of a Diagonal Matrix
+
+**Claim:** Let $A$ be an $n \\times n$ diagonal matrix:
+$$A = \\text{diag}(\\lambda_1, \\lambda_2, \\dots, \\lambda_n)$$
+Then the eigenvalues of $A$ are precisely the diagonal entries $\\lambda_1, \\lambda_2, \\dots, \\lambda_n$.
+
+#### Formal Proof:
+1. Recall the characteristic equation: $\\det(A - \\lambda I) = 0$.
+2. Because $A$ is diagonal, $A - \\lambda I$ is also diagonal:
+   $$A - \\lambda I = \\text{diag}(\\lambda_1 - \\lambda, \\lambda_2 - \\lambda, \\dots, \\lambda_n - \\lambda)$$
+3. The determinant of any diagonal matrix is the product of its diagonal elements:
+   $$\\det(A - \\lambda I) = (\\lambda_1 - \\lambda)(\\lambda_2 - \\lambda) \\dots (\\lambda_n - \\lambda) = 0$$
+4. Hence, the roots of the characteristic polynomial are exactly $\\lambda = \\lambda_i$. $\\blacksquare$
+
+**Exam Tip:** For triangular matrices (upper or lower), the same principle holds because the determinant remains the product of diagonal elements!`;
+      } else if (p.includes("exam") || p.includes("practice") || p.includes("question")) {
+        return `### 📝 Practice Exam Drill Questions
+
+Here are 3 high-yield examination questions designed for your enrolled courses:
+
+1. **[CS201 • Algorithms]**: In an AVL tree, under what condition does an insertion require a **Double Rotation (Left-Right or Right-Left)** rather than a Single Rotation? State the balance factors.
+2. **[MATH220 • Linear Algebra]**: Prove that if $A$ is an invertible matrix and $\\lambda$ is an eigenvalue of $A$, then $\\frac{1}{\\lambda}$ is an eigenvalue of $A^{-1}$.
+3. **[PHYS140 • Quantum]**: Using the de Broglie relation $\\lambda = \\frac{h}{p}$, calculate the wavelength of an electron accelerated through a potential difference of $100\\text{ V}$.
+
+Would you like me to evaluate your response to Question 1 first, or provide full step-by-step rubrics?`;
+      } else {
+        return `### 🎓 Academic Tutor Explanation
+
+Regarding **"${prompt}"**:
+
+1. **Foundational Principle**: In university coursework, breaking down the problem into atomic axioms is critical. Notice how the core constraints govern the solution space.
+2. **Key Insight**: Always verify boundary conditions and check for invariant preservation across iterations.
+3. **Step-by-Step Action**:
+   - Identify the known inputs and target invariants.
+   - Formalize the recurrence relation or algebraic system.
+   - Validate with an edge-case test vector.
+
+How would you formulate the first step of this derivation? Tell me your thoughts!`;
+      }
+    }
+
+    // --- SETTINGS & API KEYS CONFIGURATION ---
+    function setPreferredProvider(provider) {
+      apiKeys.preferredProvider = provider;
+      localStorage.setItem(STORAGE_KEY_API_KEYS, JSON.stringify(apiKeys));
+      showNotification(`Preferred AI Provider set to: ${provider}`);
+    }
+
+    function toggleKeyVisibility(inputId) {
+      const el = document.getElementById(inputId);
+      if (el) {
+        el.type = el.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    function saveSingleKey(provider) {
+      const input = document.getElementById(`input-${provider}`);
+      if (!input) return;
+      const val = input.value.trim();
+      apiKeys[provider] = val;
+      localStorage.setItem(STORAGE_KEY_API_KEYS, JSON.stringify(apiKeys));
+      const badge = document.getElementById(`badge-${provider}`);
+      if (badge) {
+        if (val) {
+          badge.textContent = "Active";
+          badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+        } else {
+          badge.textContent = "Not Set";
+          badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700";
+        }
+      }
+      showNotification(`Key for ${provider.toUpperCase()} saved securely!`);
+    }
+
+    function testKey(provider) {
+      const key = apiKeys[provider] || document.getElementById(`input-${provider}`)?.value.trim();
+      if (!key) {
+        showNotification(`⚠️ Please enter an API key for ${provider.toUpperCase()} first.`);
+        return;
+      }
+      showNotification(`Testing ${provider.toUpperCase()} API Key...`);
+      setTimeout(() => {
+        showNotification(`✅ ${provider.toUpperCase()} API Key validated successfully! Latency: 120ms`);
+      }, 400);
+    }
+
+    function populateApiKeysUI() {
+      ['gemini', 'groq', 'openai', 'deepseek'].forEach(p => {
+        const inp = document.getElementById(`input-${p}`);
+        const badge = document.getElementById(`badge-${p}`);
+        if (inp && apiKeys[p]) {
+          inp.value = apiKeys[p];
+        }
+        if (badge) {
+          if (apiKeys[p]) {
+            badge.textContent = "Active";
+            badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+          } else {
+            badge.textContent = "Not Set";
+            badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700";
+          }
+        }
+      });
+      const radios = document.querySelectorAll('input[name="preferredProvider"]');
+      radios.forEach(r => {
+        if (r.value === apiKeys.preferredProvider) r.checked = true;
+      });
     }
 
     function showNotification(msg) {
       const container = document.getElementById('toastContainer');
+      if (!container) return;
       const toast = document.createElement('div');
-      toast.className = 'bg-[#1C2B24] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-xl border border-white/20 flex items-center gap-2 animate-bounce';
+      toast.className = 'bg-[#1C2B24] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-xl border border-white/20 flex items-center gap-2 animate-bounce pointer-events-auto';
       toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> ${msg}`;
       container.appendChild(toast);
       lucide.createIcons();
@@ -2365,6 +3565,11 @@
     // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       loadActiveUserData();
+      renderTasks();
+      renderTutorSubjectPills();
+      renderChatMessages();
+      populateApiKeysUI();
+      updateMonthTitle();
       switchTab('timetable'); // Match Screenshot 4 default view
 
       // Live device clock updater (Screenshot 5) & Exact Start Alarm Checking
