@@ -1,2 +1,0 @@
-<!-- StudyPilot AI Web App Version Reference -->
-<!-- See /website/index.html for the complete standalone web app -->
