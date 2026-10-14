@@ -45,26 +45,127 @@ class StudyPilotRepository(
   fun getTutorSessionsForUser(userId: String): Flow<List<TutorSession>> = dao.getTutorSessionsForUser(userId)
   fun getScheduleFormatsForUser(userId: String): Flow<List<com.example.data.model.ScheduleFormat>> = dao.getScheduleFormatsForUser(userId)
 
+  private suspend fun <T> com.google.android.gms.tasks.Task<T>.awaitTask(): T =
+    kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+      addOnSuccessListener { cont.resume(it) { /* onCancellation */ } }
+      addOnFailureListener { cont.resumeWith(Result.failure(it)) }
+      addOnCanceledListener { cont.cancel() }
+    }
+
   private fun syncToFirestore(path: String, data: Map<String, Any?>) {
     try {
-      val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-      val currentUser = auth.currentUser
-      if (currentUser != null) {
-        val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-        firestore.document(path).set(data)
-      }
+      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      firestore.document(path).set(data)
     } catch (_: Exception) {
-      // Offline or unauthenticated fallback
+      // Offline fallback
     }
   }
 
   private fun deleteFromFirestore(path: String) {
     try {
-      val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-      val currentUser = auth.currentUser
-      if (currentUser != null) {
-        val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-        firestore.document(path).delete()
+      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      firestore.document(path).delete()
+    } catch (_: Exception) {
+      // Offline fallback
+    }
+  }
+
+  suspend fun deleteUserData(userId: String) {
+    dao.deleteSubjectsForUser(userId)
+    dao.deleteSessionsForUser(userId)
+    dao.deleteTopicsForUser(userId)
+    dao.deleteTasksForUser(userId)
+    dao.deleteQuizAttemptsForUser(userId)
+    dao.deleteTutorSessionsForUser(userId)
+    dao.deleteScheduleFormatsForUser(userId)
+    try {
+      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      firestore.document("users/$userId").delete()
+      firestore.collection("users/$userId/subjects").get().addOnSuccessListener { snap ->
+        for (doc in snap.documents) doc.reference.delete()
+      }
+      firestore.collection("users/$userId/sessions").get().addOnSuccessListener { snap ->
+        for (doc in snap.documents) doc.reference.delete()
+      }
+      firestore.collection("users/$userId/tasks").get().addOnSuccessListener { snap ->
+        for (doc in snap.documents) doc.reference.delete()
+      }
+      firestore.collection("users/$userId/topics").get().addOnSuccessListener { snap ->
+        for (doc in snap.documents) doc.reference.delete()
+      }
+    } catch (_: Exception) {}
+  }
+
+  suspend fun pullUserDataFromFirestore(userId: String) {
+    if (userId.isBlank()) return
+    try {
+      val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      // Pull remote subjects
+      val subjectsSnap = firestore.collection("users/$userId/subjects").get().awaitTask()
+      if (!subjectsSnap.isEmpty) {
+        val currentLocal = dao.getSubjectsForUser(userId).first()
+        val currentCodes = currentLocal.map { it.code }.toSet()
+        for (doc in subjectsSnap.documents) {
+          val name = doc.getString("name") ?: ""
+          val code = doc.getString("code") ?: ""
+          val color = doc.getString("colorHex") ?: "#4F6D7A"
+          if (name.isNotBlank() && !currentCodes.contains(code)) {
+            dao.insertSubject(Subject(userId = userId, name = name, code = code, colorHex = color))
+          }
+        }
+      }
+
+      // Pull remote sessions
+      val sessionsSnap = firestore.collection("users/$userId/sessions").get().awaitTask()
+      if (!sessionsSnap.isEmpty) {
+        val currentLocal = dao.getSessionsListForUser(userId)
+        val currentKeys = currentLocal.map { "${it.date}_${it.startTime}_${it.subjectName}" }.toSet()
+        for (doc in sessionsSnap.documents) {
+          val date = doc.getString("date") ?: ""
+          val startTime = doc.getString("startTime") ?: ""
+          val subjectName = doc.getString("subjectName") ?: ""
+          val key = "${date}_${startTime}_${subjectName}"
+          if (date.isNotBlank() && !currentKeys.contains(key)) {
+            dao.insertSession(
+              TimetableSession(
+                userId = userId,
+                subjectId = doc.getString("subjectId")?.toLongOrNull() ?: 1L,
+                subjectName = subjectName,
+                topic = doc.getString("topic") ?: "",
+                date = date,
+                startTime = startTime,
+                endTime = doc.getString("endTime") ?: "10:00",
+                location = doc.getString("location") ?: "Campus",
+                notes = doc.getString("notes") ?: "",
+                recurringDays = doc.getString("recurringDays") ?: "",
+                isAlarmEnabled = doc.getBoolean("isAlarmEnabled") ?: true
+              )
+            )
+          }
+        }
+      }
+
+      // Pull remote tasks
+      val tasksSnap = firestore.collection("users/$userId/tasks").get().awaitTask()
+      if (!tasksSnap.isEmpty) {
+        val currentLocal = dao.getTasksForUser(userId).first()
+        val currentTitles = currentLocal.map { it.title }.toSet()
+        for (doc in tasksSnap.documents) {
+          val title = doc.getString("title") ?: ""
+          if (title.isNotBlank() && !currentTitles.contains(title)) {
+            dao.insertTask(
+              StudyTask(
+                userId = userId,
+                subjectName = doc.getString("subjectName") ?: "General Studies",
+                title = title,
+                dueDate = doc.getString("dueDate") ?: getTodayDateString(),
+                type = doc.getString("type") ?: doc.getString("taskType") ?: "ASSIGNMENT",
+                isCompleted = doc.getBoolean("isCompleted") ?: false,
+                priority = doc.getString("priority") ?: "MEDIUM"
+              )
+            )
+          }
+        }
       }
     } catch (_: Exception) {
       // Offline fallback
@@ -551,6 +652,9 @@ class StudyPilotRepository(
   // --- Seed Initial University Data ---
   suspend fun seedSampleUniversityData(userId: String = "") {
     val targetUserId = userId.ifBlank { "student_amitesh" }
+    // First try pulling from cloud Firestore for cross-device consistency
+    pullUserDataFromFirestore(targetUserId)
+
     val existing = dao.getSubjectsForUser(targetUserId).first()
     if (existing.isNotEmpty()) return
 

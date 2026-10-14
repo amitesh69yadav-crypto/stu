@@ -204,5 +204,27 @@ interface StudyPilotDao {
 
   @Query("DELETE FROM timetable_sessions WHERE userId = :userId AND date = :date")
   suspend fun deleteSessionsForDateAndUser(userId: String, date: String)
+
+  // --- Per-User Account Data Deletion ---
+  @Query("DELETE FROM subjects WHERE userId = :userId")
+  suspend fun deleteSubjectsForUser(userId: String)
+
+  @Query("DELETE FROM timetable_sessions WHERE userId = :userId")
+  suspend fun deleteSessionsForUser(userId: String)
+
+  @Query("DELETE FROM study_topics WHERE userId = :userId")
+  suspend fun deleteTopicsForUser(userId: String)
+
+  @Query("DELETE FROM study_tasks WHERE userId = :userId")
+  suspend fun deleteTasksForUser(userId: String)
+
+  @Query("DELETE FROM quiz_attempts WHERE userId = :userId")
+  suspend fun deleteQuizAttemptsForUser(userId: String)
+
+  @Query("DELETE FROM tutor_sessions WHERE userId = :userId")
+  suspend fun deleteTutorSessionsForUser(userId: String)
+
+  @Query("DELETE FROM schedule_formats WHERE userId = :userId")
+  suspend fun deleteScheduleFormatsForUser(userId: String)
 }
 

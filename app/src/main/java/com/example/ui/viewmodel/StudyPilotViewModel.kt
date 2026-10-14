@@ -508,6 +508,58 @@ class StudyPilotViewModel(application: Application) : AndroidViewModel(applicati
   }
 
   // --- Account Actions ---
+  fun deleteUser(userId: String) {
+    viewModelScope.launch {
+      val userToDelete = _savedAccounts.value.find { it.id == userId }
+      val userName = userToDelete?.name ?: "Student"
+      val remainingAccounts = _savedAccounts.value.filter { it.id != userId }
+      _savedAccounts.value = remainingAccounts
+      saveRegisteredAccounts(remainingAccounts)
+
+      // Clean up repository records & Firestore
+      repository.deleteUserData(userId)
+
+      // If deleted account is the active account
+      if (_currentUser.value.id == userId) {
+        if (remainingAccounts.isNotEmpty()) {
+          val nextUser = remainingAccounts.first()
+          switchAccount(nextUser)
+          _snackbarMessage.emit("Deleted profile for $userName. Switched to ${nextUser.name}.")
+        } else {
+          val defaultUser = UserProfile(
+            id = "student_amitesh",
+            name = "Amitesh Yadav",
+            email = "amitesh69.yadav@gmail.com",
+            role = "Computer Science Scholar",
+            university = "Imperial College London",
+            studentId = "CS-2024-8841",
+            avatarInitials = "AY",
+            isLoggedIn = true,
+            authProvider = "Google Authentication (Firebase)",
+            rememberMe = true,
+            lastLoginTime = System.currentTimeMillis()
+          )
+          saveUser(defaultUser, isLoggedIn = true)
+          _currentUser.value = defaultUser
+          _savedAccounts.value = listOf(defaultUser)
+          saveRegisteredAccounts(listOf(defaultUser))
+          repository.seedSampleUniversityData(defaultUser.id)
+          _snackbarMessage.emit("Profile for $userName removed.")
+        }
+      } else {
+        _snackbarMessage.emit("Profile for $userName deleted.")
+      }
+    }
+  }
+
+  fun syncCloudData() {
+    viewModelScope.launch {
+      _snackbarMessage.emit("Syncing coursework with cloud...")
+      repository.pullUserDataFromFirestore(_currentUser.value.id)
+      _snackbarMessage.emit("Cloud sync complete! Devices are in sync.")
+    }
+  }
+
   fun switchAccount(user: UserProfile) {
     val updated = user.copy(isLoggedIn = true, lastLoginTime = System.currentTimeMillis())
     saveUser(updated, isLoggedIn = true)

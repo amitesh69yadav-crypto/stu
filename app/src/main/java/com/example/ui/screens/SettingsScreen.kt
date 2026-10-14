@@ -105,6 +105,8 @@ fun SettingsScreen(
 
   var showAddSubjectDialog by remember { mutableStateOf(false) }
   var showEditProfileDialog by remember { mutableStateOf(false) }
+  var accountToDelete by remember { mutableStateOf<com.example.data.model.UserProfile?>(null) }
+  var showDeleteCurrentAccountDialog by remember { mutableStateOf(false) }
 
   var editName by remember(currentUser) { mutableStateOf(currentUser.name) }
   var editEmail by remember(currentUser) { mutableStateOf(currentUser.email) }
@@ -242,9 +244,9 @@ fun SettingsScreen(
             OutlinedButton(
               onClick = { viewModel.logout() },
               shape = RoundedCornerShape(12.dp),
-              border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
+              border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
               colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
+                contentColor = MaterialTheme.colorScheme.onSurface
               ),
               modifier = Modifier
                 .weight(1f)
@@ -253,6 +255,45 @@ fun SettingsScreen(
               Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
               Spacer(modifier = Modifier.width(6.dp))
               Text("Sign Out", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            FilledTonalButton(
+              onClick = { viewModel.syncCloudData() },
+              shape = RoundedCornerShape(12.dp),
+              colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = CyanAccent.copy(alpha = 0.15f),
+                contentColor = MaterialTheme.colorScheme.onSurface
+              ),
+              modifier = Modifier
+                .weight(1f)
+                .height(38.dp)
+            ) {
+              Icon(Icons.Default.Devices, contentDescription = null, modifier = Modifier.size(15.dp), tint = PaletteDeepSage)
+              Spacer(modifier = Modifier.width(6.dp))
+              Text("Cloud Sync Now", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+
+            OutlinedButton(
+              onClick = { showDeleteCurrentAccountDialog = true },
+              shape = RoundedCornerShape(12.dp),
+              border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+              colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+              ),
+              modifier = Modifier
+                .weight(1f)
+                .height(38.dp)
+            ) {
+              Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(15.dp))
+              Spacer(modifier = Modifier.width(6.dp))
+              Text("Delete Account", fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
           }
 
@@ -408,16 +449,32 @@ fun SettingsScreen(
                     }
                   }
 
-                  if (!isCurrent) {
-                    FilledTonalButton(
-                      onClick = { viewModel.switchAccount(account) },
-                      shape = RoundedCornerShape(8.dp),
-                      contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                      modifier = Modifier.height(34.dp)
+                  Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                  ) {
+                    if (!isCurrent) {
+                      FilledTonalButton(
+                        onClick = { viewModel.switchAccount(account) },
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        modifier = Modifier.height(34.dp)
+                      ) {
+                        Icon(Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Switch", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                      }
+                    }
+                    IconButton(
+                      onClick = { accountToDelete = account },
+                      modifier = Modifier.size(34.dp)
                     ) {
-                      Icon(Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(14.dp))
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text("Switch", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                      Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete Profile",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.75f),
+                        modifier = Modifier.size(18.dp)
+                      )
                     }
                   }
                 }
@@ -1262,6 +1319,61 @@ fun SettingsScreen(
       },
       dismissButton = {
         TextButton(onClick = { showEditProfileDialog = false }) {
+          Text("Cancel")
+        }
+      }
+    )
+  }
+
+  if (showDeleteCurrentAccountDialog) {
+    AlertDialog(
+      onDismissRequest = { showDeleteCurrentAccountDialog = false },
+      title = { Text("Delete Current Account", fontWeight = FontWeight.Bold) },
+      text = {
+        Text("Are you sure you want to permanently delete the profile for ${currentUser.name} (${currentUser.email})? All local coursework, study records, timetable sessions, and cloud synced data for this student will be permanently removed.")
+      },
+      confirmButton = {
+        Button(
+          onClick = {
+            showDeleteCurrentAccountDialog = false
+            viewModel.deleteUser(currentUser.id)
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+          shape = RoundedCornerShape(10.dp)
+        ) {
+          Text("Delete Account", color = MaterialTheme.colorScheme.onError, fontWeight = FontWeight.Bold)
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = { showDeleteCurrentAccountDialog = false }) {
+          Text("Cancel")
+        }
+      }
+    )
+  }
+
+  accountToDelete?.let { target ->
+    AlertDialog(
+      onDismissRequest = { accountToDelete = null },
+      title = { Text("Delete Student Profile", fontWeight = FontWeight.Bold) },
+      text = {
+        Text("Are you sure you want to delete the profile for ${target.name} (${target.email} • ${target.studentId})? All courses, study tasks, and sessions for this student will be removed.")
+      },
+      confirmButton = {
+        Button(
+          onClick = {
+            val id = target.id
+            accountToDelete = null
+            viewModel.deleteUser(id)
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+          shape = RoundedCornerShape(10.dp)
+        ) {
+          Text("Delete Profile", color = MaterialTheme.colorScheme.onError, fontWeight = FontWeight.Bold)
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = { accountToDelete = null }) {
           Text("Cancel")
         }
       }
